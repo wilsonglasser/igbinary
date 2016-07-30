@@ -20,8 +20,10 @@ if test "$PHP_IGBINARY" != "no"; then
   AC_CHECK_HEADERS([stddef.h],, AC_MSG_ERROR([stddef.h not exists]))
   AC_CHECK_HEADERS([stdint.h],, AC_MSG_ERROR([stdint.h not exists]))
 
+  AC_MSG_CHECKING(PHP version)
+
   AC_TRY_COMPILE([
-  #include <php_version.h>
+  #include <$phpincludedir/main/php_version.h>
   ],[
 #if PHP_MAJOR_VERSION > 5
 #error PHP > 5
