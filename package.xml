@@ -79,6 +79,7 @@
     <file name="igbinary_007.phpt" role="test" />
     <file name="igbinary_008.phpt" role="test" />
     <file name="igbinary_009.phpt" role="test" />
+    <file name="igbinary_009b.phpt" role="test" />
     <file name="igbinary_010.phpt" role="test" />
     <file name="igbinary_012.phpt" role="test" />
     <file name="igbinary_013.phpt" role="test" />
@@ -113,8 +114,22 @@
     <file name="igbinary_045.phpt" role="test" />
     <file name="igbinary_045b.phpt" role="test" />
     <file name="igbinary_046.phpt" role="test" />
+    <file name="igbinary_046b.phpt" role="test" />
+    <file name="igbinary_046c.phpt" role="test" />
+    <file name="igbinary_046d.phpt" role="test" />
     <file name="igbinary_047.phpt" role="test" />
+    <file name="igbinary_048.phpt" role="test" />
+    <file name="igbinary_048b.phpt" role="test" />
+    <file name="igbinary_049.phpt" role="test" />
+    <file name="igbinary_049b.phpt" role="test" />
+    <file name="igbinary_050.phpt" role="test" />
+    <file name="igbinary_051.phpt" role="test" />
+    <file name="igbinary_052.phpt" role="test" />
+    <file name="igbinary_053.phpt" role="test" />
+    <file name="igbinary_054.phpt" role="test" />
+    <file name="igbinary_055.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
+    <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
    </dir>
   </dir>
