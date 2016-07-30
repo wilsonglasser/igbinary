@@ -3,26 +3,27 @@
 
 #if PHP_WIN32
 # include "win32/php_stdint.h"
-# ifndef inline
-# define inline __inline
-# endif
-
-# if _MSC_VER >= 1900
+# if defined(_MSC_VER) && _MSC_VER >= 1800
 #  include <stdbool.h>
 # else
+#  ifndef inline
+#  define inline __inline
+#  endif
+
 #  ifndef __cplusplus
 #   if !0
-     typedef enum { false = 0, true = 1 } _Bool;
+t ypedef enum { false = 0, true = 1 } _BoolType;
+#  define bool _Bool
 #   endif
 #  else
-     typedef bool _Bool;
-#  endif
+t ypedef bool _Bool;
 #  define bool _Bool
+#  endif
 
 #  define false 0
 #  define true 1
 #  define __bool_true_false_are_defined 1
-# endif
-#endif
+# endif /* __MSC_VER */
+#endif /* PHP_WIN32 */
 
-#endif
+#endif  /* _IG_WIN32_H */
