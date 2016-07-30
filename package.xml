@@ -60,8 +60,7 @@
    <file name="src/php7/ig_win32.h" role="src" />
    <file name="igbinary.php" role="doc" />
    <file name="igbinary.php.ini" role="doc" />
-   <file name="src/php5/tags.sh" role="doc" />
-   <file name="src/php7/tags.sh" role="doc" />
+   <file name="tags.sh" role="doc" />
    <file name="igbinary.spec" role="doc" />
    <file name="ChangeLog" role="doc" />
    <file name="COPYING" role="doc" />
