@@ -29,7 +29,11 @@
 #include "ext/standard/php_incomplete_class.h"
 
 #if defined(HAVE_APCU_SUPPORT)
-# include "ext/apcu/apc_serializer.h"
+# if defined(HAVE_APCU_HEADERS_IN_PECL)
+#  include "../pecl/apcu/apc_serializer.h"
+# else
+#  include "ext/apcu/apc_serializer.h"
+# endif
 #elif defined(HAVE_APC_SUPPORT)
 # if USE_BUNDLED_APC
 #  include "apc_serializer.h"
@@ -374,7 +378,7 @@ static inline void *igbinary_mm_wrapper_realloc(void *ptr, size_t size, void *co
 
 static inline void igbinary_mm_wrapper_free(void *ptr, void *context)
 {
-    return efree(ptr);
+    efree(ptr);
 }
 /* }}} */
 /* {{{ int igbinary_serialize(uint8_t**, size_t*, zval*) */
