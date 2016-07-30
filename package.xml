@@ -43,16 +43,16 @@
   <dir name="/">
    <file name="config.m4" role="src" />
    <file name="config.w32" role="src" />
-   <file name="hash.h" role="src" />
-   <file name="hash_si.c" role="src" />
-   <file name="igbinary.c" role="src" />
-   <file name="igbinary.h" role="src" />
-   <file name="php_igbinary.h" role="src" />
-   <file name="ig_win32.h" role="src" />
-   <file name="apc_serializer.h" role="src" />
+   <file name="src/php5/hash.h" role="src" />
+   <file name="src/php5/hash_si.c" role="src" />
+   <file name="src/php5/igbinary.c" role="src" />
+   <file name="src/php5/igbinary.h" role="src" />
+   <file name="src/php5/php_igbinary.h" role="src" />
+   <file name="src/php5/ig_win32.h" role="src" />
+   <file name="src/php5/apc_serializer.h" role="src" />
    <file name="igbinary.php" role="doc" />
    <file name="igbinary.php.ini" role="doc" />
-   <file name="tags.sh" role="doc" />
+   <file name="src/php5/tags.sh" role="doc" />
    <file name="igbinary.spec" role="doc" />
    <file name="ChangeLog" role="doc" />
    <file name="COPYING" role="doc" />
