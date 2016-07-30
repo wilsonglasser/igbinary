@@ -458,7 +458,7 @@ static inline void *igbinary_mm_wrapper_realloc(void *ptr, size_t size, void *co
 
 static inline void igbinary_mm_wrapper_free(void *ptr, void *context)
 {
-    return efree(ptr);
+    efree(ptr);
 }
 /* }}} */
 /* {{{ int igbinary_serialize(uint8_t**, size_t*, zval*) */
