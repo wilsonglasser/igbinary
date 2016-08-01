@@ -12,11 +12,11 @@
 
 #  ifndef __cplusplus
 #   if !0
-t ypedef enum { false = 0, true = 1 } _BoolType;
+typedef enum { false = 0, true = 1 } _BoolType;
 #  define bool _Bool
 #   endif
 #  else
-t ypedef bool _Bool;
+typedef bool _Bool;
 #  define bool _Bool
 #  endif
 
