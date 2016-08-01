@@ -2196,6 +2196,10 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 		php_store_class_name(*z, name, name_len);
 	}
 
+	if (igsd->buffer_offset + 1 > igsd->buffer_size) {
+		zend_error(E_WARNING, "igbinary_unserialize_long: end-of-data");
+		return 1;
+	}
 	t = (enum igbinary_type) igbinary_unserialize8(igsd TSRMLS_CC);
 	switch (t) {
 		case igbinary_type_array8:
