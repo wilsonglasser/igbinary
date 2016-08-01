@@ -12,7 +12,7 @@
 
 #  ifndef __cplusplus
 #   if !0
-typedef enum { false = 0, true = 1 } _BoolType;
+typedef enum { false = 0, true = 1 } _Bool;
 #  define bool _Bool
 #   endif
 #  else
