@@ -46,7 +46,9 @@
    <file name="igbinary.h" role="src" />
    <file name="php_igbinary.h" role="src" />
    <file name="src/php5/hash.h" role="src" />
+   <file name="src/php5/hash_ptr.h" role="src" />
    <file name="src/php5/hash_si.c" role="src" />
+   <file name="src/php5/hash_si_ptr.c" role="src" />
    <file name="src/php5/igbinary.c" role="src" />
    <file name="src/php5/igbinary.h" role="src" />
    <file name="src/php5/php_igbinary.h" role="src" />

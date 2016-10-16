@@ -57,6 +57,7 @@
 
 #include <stddef.h>
 #include "hash.h"
+#include "hash_ptr.h"
 
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 /** Session serializer function prototypes. */
@@ -135,7 +136,7 @@ struct igbinary_serialize_data {
 	bool scalar;				/**< Serializing scalar. */
 	bool compact_strings;		/**< Check for duplicate strings. */
 	struct hash_si strings;		/**< Hash of already serialized strings. */
-	struct hash_si objects;		/**< Hash of already serialized objects. */
+	struct hash_si_ptr objects;		/**< Hash of already serialized objects. */
 	int string_count;			/**< Serialized string count, used for back referencing */
 	int error;					/**< Error number. Not used. */
 	struct igbinary_memory_manager	mm; /**< Memory management functions. */
@@ -658,7 +659,7 @@ inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *i
 	igsd->scalar = scalar;
 	if (!igsd->scalar) {
 		hash_si_init(&igsd->strings, 16);
-		hash_si_init(&igsd->objects, 16);
+		hash_si_ptr_init(&igsd->objects, 16);
 	}
 
 	igsd->compact_strings = (bool)IGBINARY_G(compact_strings);
@@ -675,7 +676,7 @@ inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data
 
 	if (!igsd->scalar) {
 		hash_si_deinit(&igsd->strings);
-		hash_si_deinit(&igsd->objects);
+		hash_si_ptr_deinit(&igsd->objects);
 	}
 }
 /* }}} */
@@ -884,42 +885,46 @@ inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd
 		return 0;
 	}
 
-	if (igsd->scalar || !igsd->compact_strings || hash_si_find(&igsd->strings, s, len, i) == 1) {
-		if (!igsd->scalar && igsd->compact_strings) {
-			hash_si_insert(&igsd->strings, s, len, igsd->string_count);
-		}
+	if (!igsd->scalar && igsd->compact_strings) {
+		struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, s, len, igsd->string_count);
+		if (result.code == hash_si_code_exists) {
+			uint32_t value = result.value;
+			if (value <= 0xff) {
+				if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_string_id8 TSRMLS_CC) != 0) {
+					return 1;
+				}
 
-		igsd->string_count += 1;
+				if (igbinary_serialize8(igsd, (uint8_t) value TSRMLS_CC) != 0) {
+					return 1;
+				}
+			} else if (value <= 0xffff) {
+				if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_string_id16 TSRMLS_CC) != 0) {
+					return 1;
+				}
 
-		if (igbinary_serialize_chararray(igsd, s, len TSRMLS_CC) != 0) {
-			return 1;
-		}
-	} else {
-		if (*i <= 0xff) {
-			if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_string_id8 TSRMLS_CC) != 0) {
-				return 1;
-			}
+				if (igbinary_serialize16(igsd, (uint16_t) value TSRMLS_CC) != 0) {
+					return 1;
+				}
+			} else {
+				if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_string_id32 TSRMLS_CC) != 0) {
+					return 1;
+				}
 
-			if (igbinary_serialize8(igsd, (uint8_t) *i TSRMLS_CC) != 0) {
-				return 1;
+				if (igbinary_serialize32(igsd, (uint32_t) value TSRMLS_CC) != 0) {
+					return 1;
+				}
 			}
-		} else if (*i <= 0xffff) {
-			if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_string_id16 TSRMLS_CC) != 0) {
-				return 1;
-			}
-
-			if (igbinary_serialize16(igsd, (uint16_t) *i TSRMLS_CC) != 0) {
-				return 1;
-			}
+			return 0;
+		} else if (EXPECTED(result.code == hash_si_code_inserted)) {
+			/* Fall through to igbinary_serialize_chararray */
 		} else {
-			if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_string_id32 TSRMLS_CC) != 0) {
-				return 1;
-			}
-
-			if (igbinary_serialize32(igsd, (uint32_t) *i TSRMLS_CC) != 0) {
-				return 1;
-			}
+			return 1;  /* Failed to allocate copy of string */
 		}
+	}
+
+	igsd->string_count++; /* A new string is being serialized - update count so that duplicate class names can be used. */
+	if (igbinary_serialize_chararray(igsd, s, len TSRMLS_CC) != 0) {
+		return 1;
 	}
 
 	return 0;
@@ -1075,45 +1080,37 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 /* {{{ igbinary_serialize_array_ref */
 /** Serializes array reference. */
 inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *igsd, zval *z, bool object TSRMLS_DC) {
-	uint32_t t = 0;
-	uint32_t *i = &t;
-	union {
-		zval *z;
-		struct {
-			zend_class_entry *ce;
-			zend_object_handle handle;
-		} obj;
-	} key = { 0 };
+	/* Integer representation of pointer to a zend_object or zval */
+	size_t t;
+	zend_uintptr_t key;
 
 	if (object && Z_TYPE_P(z) == IS_OBJECT && Z_OBJ_HT_P(z)->get_class_entry) {
-		key.obj.ce = Z_OBJCE_P(z);
-		key.obj.handle = Z_OBJ_HANDLE_P(z);
+		key = (zend_uintptr_t) zend_objects_get_address(z TSRMLS_CC);
 	} else {
-		key.z = z;
+		key = (zend_uintptr_t) z;
 	}
 
-	if (hash_si_find(&igsd->objects, (char *)&key, sizeof(key), i) == 1) {
-		t = hash_si_size(&igsd->objects);
-		hash_si_insert(&igsd->objects, (char *)&key, sizeof(key), t);
+	t = hash_si_ptr_find_or_insert(&igsd->objects, key, igsd->objects.used);
+	if (t == SIZE_MAX) {
 		return 1;
 	} else {
 		enum igbinary_type type;
-		if (*i <= 0xff) {
+		if (t <= 0xff) {
 			type = object ? igbinary_type_objref8 : igbinary_type_ref8;
 			if (igbinary_serialize8(igsd, (uint8_t) type TSRMLS_CC) != 0) {
 				return 1;
 			}
 
-			if (igbinary_serialize8(igsd, (uint8_t) *i TSRMLS_CC) != 0) {
+			if (igbinary_serialize8(igsd, (uint8_t) t TSRMLS_CC) != 0) {
 				return 1;
 			}
-		} else if (*i <= 0xffff) {
+		} else if (t <= 0xffff) {
 			type = object ? igbinary_type_objref16 : igbinary_type_ref16;
 			if (igbinary_serialize8(igsd, (uint8_t) type TSRMLS_CC) != 0) {
 				return 1;
 			}
 
-			if (igbinary_serialize16(igsd, (uint16_t) *i TSRMLS_CC) != 0) {
+			if (igbinary_serialize16(igsd, (uint16_t) t TSRMLS_CC) != 0) {
 				return 1;
 			}
 		} else {
@@ -1122,7 +1119,7 @@ inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *i
 				return 1;
 			}
 
-			if (igbinary_serialize32(igsd, (uint32_t) *i TSRMLS_CC) != 0) {
+			if (igbinary_serialize32(igsd, (uint32_t) t TSRMLS_CC) != 0) {
 				return 1;
 			}
 		}
@@ -1289,10 +1286,9 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 /** Serialize object name. */
 inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, const char *class_name, size_t name_len TSRMLS_DC) {
 	uint32_t t;
-	uint32_t *i = &t;
 
-	if (hash_si_find(&igsd->strings, class_name, name_len, i) == 1) {
-		hash_si_insert(&igsd->strings, class_name, name_len, igsd->string_count);
+	struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, class_name, name_len, igsd->string_count);
+	if (result.code == hash_si_code_inserted) {
 		igsd->string_count += 1;
 
 		if (name_len <= 0xff) {
@@ -1327,22 +1323,23 @@ inline static int igbinary_serialize_object_name(struct igbinary_serialize_data 
 
 		memcpy(igsd->buffer+igsd->buffer_size, class_name, name_len);
 		igsd->buffer_size += name_len;
-	} else {
+	} else if (EXPECTED(result.code == hash_si_code_exists)) {
 		/* already serialized string */
-		if (*i <= 0xff) {
+		uint32_t value = result.value;
+		if (value <= 0xff) {
 			if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_object_id8 TSRMLS_CC) != 0) {
 				return 1;
 			}
 
-			if (igbinary_serialize8(igsd, (uint8_t) *i TSRMLS_CC) != 0) {
+			if (igbinary_serialize8(igsd, (uint8_t) value TSRMLS_CC) != 0) {
 				return 1;
 			}
-		} else if (*i <= 0xffff) {
+		} else if (value <= 0xffff) {
 			if (igbinary_serialize8(igsd, (uint8_t) igbinary_type_object_id16 TSRMLS_CC) != 0) {
 				return 1;
 			}
 
-			if (igbinary_serialize16(igsd, (uint16_t) *i TSRMLS_CC) != 0) {
+			if (igbinary_serialize16(igsd, (uint16_t) value TSRMLS_CC) != 0) {
 				return 1;
 			}
 		} else {
@@ -1350,10 +1347,12 @@ inline static int igbinary_serialize_object_name(struct igbinary_serialize_data 
 				return 1;
 			}
 
-			if (igbinary_serialize32(igsd, (uint32_t) *i TSRMLS_CC) != 0) {
+			if (igbinary_serialize32(igsd, (uint32_t) value TSRMLS_CC) != 0) {
 				return 1;
 			}
 		}
+	} else {
+		return 1; /* Failed to allocate copy of string */
 	}
 
 	return 0;
