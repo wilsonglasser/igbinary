@@ -452,6 +452,12 @@ IGBINARY_API int igbinary_serialize(uint8_t **ret, size_t *ret_len, zval *z TSRM
 IGBINARY_API int igbinary_serialize_ex(uint8_t **ret, size_t *ret_len, zval *z, struct igbinary_memory_manager *memory_manager TSRMLS_DC) {
 	struct igbinary_serialize_data igsd;
 	uint8_t *tmpbuf;
+	// While we can't get passed references through the PHP_FUNCTIONs igbinary declares, third party code can call us igbinary's methods with references.
+	// See https://github.com/php-memcached-dev/php-memcached/issues/326
+	if (Z_TYPE_P(z) == IS_INDIRECT) {
+		z = Z_INDIRECT_P(z);
+	}
+	ZVAL_DEREF(z);
 
 	if (igbinary_serialize_data_init(&igsd, Z_TYPE_P(z) != IS_OBJECT && Z_TYPE_P(z) != IS_ARRAY, memory_manager TSRMLS_CC)) {
 		zend_error(E_WARNING, "igbinary_serialize: cannot init igsd");
