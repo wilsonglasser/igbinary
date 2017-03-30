@@ -1632,6 +1632,10 @@ static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z
 			return igbinary_serialize_long(igsd, Z_LVAL_P(z) TSRMLS_CC);
 		case IS_NULL:
 			return igbinary_serialize_null(igsd TSRMLS_CC);
+		case IS_UNDEF:
+			// As of php 7.1.3, started seeing "zval has unknown type 0"
+			zend_error(E_WARNING, "igbinary_serialize_zval: zval has unexpected type IS_UNDEF(0)");
+			return igbinary_serialize_null(igsd TSRMLS_CC);
 		case IS_TRUE:
 			return igbinary_serialize_bool(igsd, 1 TSRMLS_CC);
 		case IS_FALSE:
