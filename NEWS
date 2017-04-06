@@ -1,3 +1,7 @@
+2.0.4 ???
+========
+* Fixes bug #129: Should not call __wakeup() on data which was created by Serializable::unserialize()
+
 2.0.3 2017-03-31
 ========
 * Fixes bug #126: Fatal error: "igbinary_serialize_zval: zval has unknown type 0" (IS_UNDEF)
