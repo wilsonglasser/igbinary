@@ -73,10 +73,8 @@
    <file name="igbinary.php.ini" role="doc" />
    <file name="tags.sh" role="doc" />
    <file name="igbinary.spec" role="doc" />
-   <file name="ChangeLog" role="doc" />
    <file name="COPYING" role="doc" />
    <file name="CREDITS" role="doc" />
-   <file name="EXPERIMENTAL" role="doc" />
    <file name="README.md" role="doc" />
    <file name="NEWS" role="doc" />
    <dir name="tests">
