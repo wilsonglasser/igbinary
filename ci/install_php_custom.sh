@@ -34,8 +34,8 @@ PHP_TAR_FILE="$PHP_FOLDER.tar.bz2"
 if [ "$PHP_CUSTOM_NORMAL_VERSION" != "7.2.0" ] ; then
     curl --verbose https://secure.php.net/distributions/$PHP_TAR_FILE -o $PHP_TAR_FILE
 else
-    curl --verbose https://downloads.php.net/~pollita/php-7.2.0alpha2.tar.bz2 -o $PHP_TAR_FILE
-    PHP_FOLDER="php-7.2.0alpha2"
+    curl --verbose https://downloads.php.net/~pollita/php-7.2.0RC2.tar.bz2 -o $PHP_TAR_FILE
+    PHP_FOLDER="php-7.2.0RC2"
 fi
 
 tar xjf $PHP_TAR_FILE
