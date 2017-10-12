@@ -34,7 +34,7 @@
  <date>2017-03-31</date>
  <time>16:00:00</time>
  <version>
-  <release>2.0.4</release>
+  <release>2.0.5</release>
   <api>1.1.1</api>
  </version>
  <stability>
@@ -163,6 +163,19 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2017-10-11</date>
+   <time>16:00:00</time>
+   <version>
+    <release>2.0.5-dev</release>
+    <api>1.1.1</api>
+   </version>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Properly pick up presence of gcc for default compiler flags (`cc --version` doesn't contain gcc).
+  Add -O2 to default gcc compiler flags.
+   </notes>
+  </release>
   <release>
    <date>2017-04-14</date>
    <time>16:00:00</time>
