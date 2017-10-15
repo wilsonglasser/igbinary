@@ -49,6 +49,7 @@
 #include <stddef.h>
 #include "hash.h"
 #include "hash_ptr.h"
+#include "zend_alloc.h"
 
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 /** Session serializer function prototypes. */
@@ -210,13 +211,13 @@ inline static int igbinary_serialize_null(struct igbinary_serialize_data *igsd);
 inline static int igbinary_serialize_bool(struct igbinary_serialize_data *igsd, int b);
 inline static int igbinary_serialize_long(struct igbinary_serialize_data *igsd, zend_long l);
 inline static int igbinary_serialize_double(struct igbinary_serialize_data *igsd, double d);
-inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd, char *s, size_t len);
+inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd, zend_string *s);
 inline static int igbinary_serialize_chararray(struct igbinary_serialize_data *igsd, const char *s, size_t len);
 
 inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd, zval *z, bool object, bool incomplete_class);
 inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *igsd, zval *z, bool object);
 inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data *igsd, zval *z, HashTable *ht, zend_class_entry *ce, bool incomplete_class);
-inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, const char *name, size_t name_len);
+inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, zend_string *name);
 inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd, zval *z);
 
 static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z);
@@ -961,7 +962,8 @@ inline static int igbinary_serialize_double(struct igbinary_serialize_data *igsd
 /** Serializes string.
  * Serializes each string once, after first time uses pointers.
  */
-inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd, char *s, size_t len) {
+inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd, zend_string *s) {
+	const size_t len = ZSTR_LEN(s);
 	if (len == 0) {
 		if (igbinary_serialize8(igsd, igbinary_type_string_empty) != 0) {
 			return 1;
@@ -971,7 +973,7 @@ inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd
 	}
 
 	if (!igsd->scalar && igsd->compact_strings) {
-		struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, s, len, igsd->string_count);
+		struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, s, igsd->string_count);
 		if (result.code == hash_si_code_exists) {
 			uint32_t value = result.value;
 			if (value <= 0xff) {
@@ -1008,7 +1010,7 @@ inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd
 	}
 
 	igsd->string_count++; /* A new string is being serialized - update count so that duplicate class names can be used. */
-	if (igbinary_serialize_chararray(igsd, s, len) != 0) {
+	if (igbinary_serialize_chararray(igsd, ZSTR_VAL(s), len) != 0) {
 		return 1;
 	}
 	return 0;
@@ -1129,7 +1131,7 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 			}
 		} else {
 			/* Key is string */
-			if (igbinary_serialize_string(igsd, ZSTR_VAL(key), ZSTR_LEN(key)) != 0) {
+			if (igbinary_serialize_string(igsd, key) != 0) {
 				return 1;
 			}
 		}
@@ -1309,7 +1311,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 			zend_string *prop_name = Z_STR_P(d);
 
 			if ((v = zend_hash_find(object_properties, prop_name)) != NULL) {
-				if (igbinary_serialize_string(igsd, ZSTR_VAL(prop_name), ZSTR_LEN(prop_name)) != 0) {
+				if (igbinary_serialize_string(igsd, prop_name) != 0) {
 					return 1;
 				}
 
@@ -1345,7 +1347,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 						zend_string_release(mangled_prop_name);
 
 						php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_P(d));
-						if (igbinary_serialize_string(igsd, Z_STRVAL_P(d), Z_STRLEN_P(d)) != 0) {
+						if (igbinary_serialize_string(igsd, Z_STR_P(d)) != 0) {
 							return 1;
 						}
 
@@ -1360,7 +1362,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 						v = Z_INDIRECT_P(v);
 					}
 
-					if (igbinary_serialize_string(igsd, ZSTR_VAL(mangled_prop_name), ZSTR_LEN(mangled_prop_name)) != 0) {
+					if (igbinary_serialize_string(igsd, mangled_prop_name) != 0) {
 						zend_string_release(mangled_prop_name);
 						return 1;
 					}
@@ -1373,7 +1375,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 
 			} else {
 				/* if all else fails, just serialize the value in anyway. */
-				if (igbinary_serialize_string(igsd, Z_STRVAL_P(d), Z_STRLEN_P(d)) != 0) {
+				if (igbinary_serialize_string(igsd, Z_STR_P(d)) != 0) {
 					return 1;
 				}
 
@@ -1393,9 +1395,10 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 /* }}} */
 /* {{{ igbinary_serialize_object_name */
 /** Serialize object name. */
-inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, const char *class_name, size_t name_len) {
-	struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, class_name, name_len, igsd->string_count);
+inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, zend_string *class_name) {
+	struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, class_name, igsd->string_count);
 	if (result.code == hash_si_code_inserted) {
+		const size_t name_len = ZSTR_LEN(class_name);
 		igsd->string_count += 1;
 
 		if (name_len <= 0xff) {
@@ -1428,7 +1431,7 @@ inline static int igbinary_serialize_object_name(struct igbinary_serialize_data 
 			return 1;
 		}
 
-		memcpy(igsd->buffer+igsd->buffer_size, class_name, name_len);
+		memcpy(igsd->buffer+igsd->buffer_size, ZSTR_VAL(class_name), name_len);
 		igsd->buffer_size += name_len;
 	} else if (EXPECTED(result.code == hash_si_code_exists)) {
 		/* already serialized string */
@@ -1492,7 +1495,7 @@ inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd
 	/* custom serializer */
 	if (ce && ce->serialize != NULL) {
 		if (ce->serialize(z, &serialized_data, &serialized_len, (zend_serialize_data *)NULL) == SUCCESS && !EG(exception)) {
-			if (igbinary_serialize_object_name(igsd, ZSTR_VAL(ce->name), ZSTR_LEN(ce->name)) != 0) {
+			if (igbinary_serialize_object_name(igsd, ce->name) != 0) {
 				if (serialized_data) {
 					efree(serialized_data);
 				}
@@ -1571,7 +1574,7 @@ inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd
 
 	/* serialize class name */
 	PHP_SET_CLASS_ATTRIBUTES(z);
-	if (igbinary_serialize_object_name(igsd, ZSTR_VAL(class_name), ZSTR_LEN(class_name)) != 0) {
+	if (igbinary_serialize_object_name(igsd, class_name) != 0) {
 		PHP_CLEANUP_CLASS_ATTRIBUTES();
 		return 1;
 	}
@@ -1651,7 +1654,7 @@ static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z
 			/* if is_ref, then php5 would have called igbinary_serialize_array_ref */
 			return igbinary_serialize_array(igsd, z, false, false);
 		case IS_STRING:
-			return igbinary_serialize_string(igsd, Z_STRVAL_P(z), Z_STRLEN_P(z));
+			return igbinary_serialize_string(igsd, Z_STR_P(z));
 		case IS_LONG:
 			return igbinary_serialize_long(igsd, Z_LVAL_P(z));
 		case IS_NULL:
