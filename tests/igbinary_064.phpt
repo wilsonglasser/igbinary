@@ -23,7 +23,7 @@ class G8 {
     public $FyG8;
 }
 
-$data = [new Fy('G8G8'), new Fy('EzG8'), new Ez(), new G8(), new Ez(), 'G8' => new G8(), 'F8Ez' => new G8(), [new G8()]];
+$data = array(new Fy('G8G8'), new Fy('EzG8'), new Ez(), new G8(), new Ez(), 'G8' => new G8(), 'F8Ez' => new G8(), array(new G8()));
 var_dump($data);
 echo "\n";
 $str = igbinary_serialize($data);

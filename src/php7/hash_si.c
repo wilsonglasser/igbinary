@@ -77,13 +77,14 @@ inline static struct hash_si_pair *_hash_si_find(const struct hash_si *h, const 
 	struct hash_si_pair *it;
 	const struct hash_si_pair *last_element;
 	uint32_t increment;
+	uint32_t elem_key_hash;
 
 	assert(h != NULL);
 
 	mask = h->mask;
 	it = &(h->data[key_hash & mask]);
 
-	const uint32_t elem_key_hash = it->key_hash;
+	elem_key_hash = it->key_hash;
 	if (elem_key_hash == 0) {
 		/* This slot is empty - PHP guarantees hashes are non-zero */
 		return it;
@@ -108,7 +109,7 @@ inline static struct hash_si_pair *_hash_si_find(const struct hash_si *h, const 
 			it -= (mask + 1);
 		}
 
-		const uint32_t elem_key_hash = it->key_hash;
+		elem_key_hash = it->key_hash;
 		if (elem_key_hash == 0) {
 			/* This slot is empty - PHP guarantees hashes are non-zero */
 			return it;
