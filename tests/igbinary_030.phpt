@@ -5,8 +5,9 @@ Unserialize invalid data
 if(!extension_loaded('igbinary')) {
 	echo "skip no igbinary";
 }
+?>
 --FILE--
-<?php 
+<?php
 
 $datas = array(
 	87817,
@@ -48,5 +49,23 @@ foreach ($datas as $data) {
 		var_dump($data);
 	}
 }
-
+?>
 --EXPECT--
+padded should get original
+object(stdClass)#2 (3) {
+  ["0"]=>
+  int(1)
+  ["1"]=>
+  int(2)
+  ["2"]=>
+  int(3)
+}
+vs.
+object(stdClass)#1 (3) {
+  [0]=>
+  int(1)
+  [1]=>
+  int(2)
+  [2]=>
+  int(3)
+}
