@@ -2058,7 +2058,19 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 				var_push_dtor(var_hash, old_v);
 			}
 */
-			zend_hash_index_update(h, key_index, &v, sizeof(v), NULL);
+			/* No point in the below code to convert by string, PHP 5 can access object number properties only by number. */
+			/*if (UNEXPECTED(object)) {
+				char id[32], *p;
+				int len;
+				p = smart_str_print_long(id + sizeof(id) - 1, (long) key_index);
+				len = id + sizeof(id) - 1 - p;
+				if (zend_symtable_find(h, key, key_len + 1, (void **)&old_v) == SUCCESS) {
+					var_push_dtor(var_hash, old_v);
+				}
+				zend_symtable_update(h, p, len + 1, &v, sizeof(v), NULL);
+			} else { */
+				zend_hash_index_update(h, key_index, &v, sizeof(v), NULL);
+			/* } */
 		}
 	}
 
