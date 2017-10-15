@@ -25,7 +25,7 @@ $datas = array(
 	"dakjdh98389\000",
 	null,
 	(object)array(1,2,3),
-    $o,
+    $o,  // some weirdness unserializing with zend_hash_update on strings that are integers.
 );
 
 error_reporting(0);
@@ -58,6 +58,24 @@ foreach ($datas as $data) {
 }
 ?>
 --EXPECT--
+padded should get original
+object(stdClass)#8 (3) {
+  ["0"]=>
+  int(1)
+  ["1"]=>
+  int(2)
+  ["2"]=>
+  int(3)
+}
+vs.
+object(stdClass)#2 (3) {
+  [0]=>
+  int(1)
+  [1]=>
+  int(2)
+  [2]=>
+  int(3)
+}
 padded should get original
 object(stdClass)#11 (1) {
   [1]=>
