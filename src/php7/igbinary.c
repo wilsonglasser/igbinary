@@ -455,17 +455,20 @@ static int igbinary_finish_wakeup(struct igbinary_unserialize_data* igsd TSRMLS_
 /* {{{ Memory allocator wrappers */
 static inline void *igbinary_mm_wrapper_malloc(size_t size, void *context)
 {
-    return emalloc(size);
+	(void)context;
+	return emalloc(size);
 }
 
 static inline void *igbinary_mm_wrapper_realloc(void *ptr, size_t size, void *context)
 {
-    return erealloc(ptr, size);
+	(void)context;
+	return erealloc(ptr, size);
 }
 
 static inline void igbinary_mm_wrapper_free(void *ptr, void *context)
 {
-    efree(ptr);
+	(void)context;
+	efree(ptr);
 }
 /* }}} */
 /* {{{ int igbinary_serialize(uint8_t**, size_t*, zval*) */
@@ -593,9 +596,7 @@ PHP_FUNCTION(igbinary_serialize) {
 PS_SERIALIZER_ENCODE_FUNC(igbinary)
 {
 	zend_string *result;
-	zend_string *key;
 	struct igbinary_serialize_data igsd;
-	uint8_t *tmpbuf;
 
 	if (igbinary_serialize_data_init(&igsd, false, NULL TSRMLS_CC)) {
 		zend_error(E_WARNING, "igbinary_serialize: cannot init igsd");
@@ -616,7 +617,7 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 
 	/* Copy the buffer to a new zend_string */
 	/* TODO: Clean up igsd->mm, and make this a pointer swap instead? It's only used for building up the serialization data buffer. */
-	result = zend_string_init(igsd.buffer, igsd.buffer_size, 0);
+	result = zend_string_init((const char*)igsd.buffer, igsd.buffer_size, 0);
 	igbinary_serialize_data_deinit(&igsd, 1 TSRMLS_CC);
 
 	return result;
@@ -626,7 +627,6 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 /* This is similar to PS_SERIALIZER_DECODE_FUNC(php) from ext/session/session.c */
 PS_SERIALIZER_DECODE_FUNC(igbinary) {
 	HashTable *tmp_hash;
-	int tmp_int;
 	zval z;
 	zval *d;
 	zend_string *key;
@@ -958,9 +958,6 @@ inline static int igbinary_serialize_double(struct igbinary_serialize_data *igsd
  * Serializes each string once, after first time uses pointers.
  */
 inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd, char *s, size_t len TSRMLS_DC) {
-	uint32_t t;
-	uint32_t *i = &t;
-
 	if (len == 0) {
 		if (igbinary_serialize8(igsd, igbinary_type_string_empty TSRMLS_CC) != 0) {
 			return 1;
@@ -1393,9 +1390,6 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 /* {{{ igbinary_serialize_object_name */
 /** Serialize object name. */
 inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, const char *class_name, size_t name_len TSRMLS_DC) {
-	uint32_t t;
-	uint32_t *i = &t;
-
 	struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, class_name, name_len, igsd->string_count);
 	if (result.code == hash_si_code_inserted) {
 		igsd->string_count += 1;
@@ -1761,7 +1755,7 @@ inline static void igbinary_unserialize_header_emit_warning(struct igbinary_unse
 	char buf[9], *it;
 	for (i = 0; i < 4; i++) {
 		if (!isprint((int)igsd->buffer[i])) {
-			if (version != 0 && (version & 0xff000000) == version) {
+			if (version != 0 && (((unsigned int)version) & 0xff000000) == (unsigned int)version) {
 				// Check if high order byte was set instead of low order byte
 				zend_error(E_WARNING, "igbinary_unserialize_header: unsupported version: %u, should be %u or %u (wrong endianness?)", (unsigned int) version, 0x00000001, (unsigned int) IGBINARY_FORMAT_VERSION);
 				return;
@@ -2040,7 +2034,7 @@ inline static zend_string* igbinary_unserialize_chararray(struct igbinary_unseri
 		igsd->strings = new_strings;
 	}
 
-	zstr = zend_string_init(igsd->buffer + igsd->buffer_offset, l, 0);
+	zstr = zend_string_init((const char*)(igsd->buffer + igsd->buffer_offset), l, 0);
 
 	igsd->buffer_offset += l;
 
@@ -2571,9 +2565,9 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 			is_from_serialized_data = true;
 			// FIXME will this break if z isn't an object?
 			r = igbinary_unserialize_object_ser(igsd, t, z, ce TSRMLS_CC);
-            if (r != 0) {
-                break;
-            }
+			if (r != 0) {
+				break;
+			}
 
 			if (incomplete_class) {
 				php_store_class_name(z, ZSTR_VAL(class_name), ZSTR_LEN(class_name));
@@ -2636,7 +2630,6 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 /** Unserializes array or object by reference. */
 inline static int igbinary_unserialize_ref(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, int flags TSRMLS_DC) {
 	size_t n;
-	zval* z_ref = NULL;
 
 	if (t == igbinary_type_ref8 || t == igbinary_type_objref8) {
 		if (igsd->buffer_offset + 1 > igsd->buffer_size) {

@@ -1,12 +1,12 @@
 --TEST--
-Unserialize invalid data (PHP 5)
+Unserialize invalid data (php 7.2+)
 --SKIPIF--
 <?php
-if(!extension_loaded('igbinary')) {
+if (!extension_loaded('igbinary')) {
 	echo "skip no igbinary";
 }
-if (PHP_VERSION_ID >= 70000) {
-    echo "Skip php 5.6 or older required\n";
+if (PHP_VERSION_ID < 70200) {
+    echo "Skip php 7.2+ required\n";
 }
 ?>
 --FILE--
@@ -14,7 +14,6 @@ if (PHP_VERSION_ID >= 70000) {
 
 $o = new stdClass();
 $o->{"1"} = "manual";
-
 $datas = array(
 	87817,
 	-1,
@@ -58,13 +57,3 @@ foreach ($datas as $data) {
 }
 ?>
 --EXPECT--
-padded should get original
-object(stdClass)#11 (1) {
-  [1]=>
-  string(6) "manual"
-}
-vs.
-object(stdClass)#1 (1) {
-  ["1"]=>
-  string(6) "manual"
-}
