@@ -1,6 +1,6 @@
 2.0.5 2017-?-? (dev)
 ========
-* Improve performance when unserializing objects/arrays and serializing objects/arrays/strings in php 7.
+* Improve performance when unserializing objects/arrays and serializing objects/arrays/strings in php 5/7.
 * Update unserialization of integer object keys for php 7.2: Make those keys accessible when unserializing.
 * Properly pick up presence of gcc for default compiler flags (`cc --version` doesn't contain gcc).
   Add -O2 to default gcc compiler flags.
