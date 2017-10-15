@@ -2187,13 +2187,11 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 		/* Use NULL because inserting UNDEF into array does not add a new element */
 		ZVAL_NULL(&v);
 		if (key_str != NULL) {
-			zend_hash_update(h, key_str, &v);
+			vp = zend_hash_update(h, key_str, &v);
 
-			vp = zend_hash_find(h, key_str);
 			zend_string_release(key_str);
 		} else {
-			zend_hash_index_update(h, key_index, &v);
-			vp = zend_hash_index_find(h, key_index);
+			vp = zend_hash_index_update(h, key_index, &v);
 		}
 
 		ZEND_ASSERT(vp != NULL);
