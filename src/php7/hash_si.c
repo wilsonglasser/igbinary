@@ -56,7 +56,7 @@ void hash_si_deinit(struct hash_si *h) {
 
 	for (i = 0; i <= h->mask; i++) {
 		if (h->data[i].key_zstr != NULL) {
-			zend_string_delref(h->data[i].key_zstr);
+			zend_string_release(h->data[i].key_zstr);
 		}
 	}
 
