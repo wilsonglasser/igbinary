@@ -598,9 +598,17 @@ PHP_FUNCTION(igbinary_serialize) {
 /* {{{ Serializer encode function */
 PS_SERIALIZER_ENCODE_FUNC(igbinary)
 {
+	zval* session_vars;
 	zend_string *result;
 	struct igbinary_serialize_data igsd;
 
+	session_vars = &(PS(http_session_vars));
+	if (Z_ISREF_P(session_vars)) {
+		session_vars = Z_REFVAL_P(session_vars);
+	}
+	if (Z_TYPE_P(session_vars) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(session_vars)) == 0) {
+		return ZSTR_EMPTY_ALLOC();
+	}
 	if (igbinary_serialize_data_init(&igsd, false, NULL)) {
 		zend_error(E_WARNING, "igbinary_serialize: cannot init igsd");
 		return ZSTR_EMPTY_ALLOC();
@@ -612,7 +620,7 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 		return ZSTR_EMPTY_ALLOC();
 	}
 
-	if (igbinary_serialize_array(&igsd, &(PS(http_session_vars)), false, false) != 0) {
+	if (igbinary_serialize_array(&igsd, session_vars, false, false) != 0) {
 		igbinary_serialize_data_deinit(&igsd, 1);
 		zend_error(E_WARNING, "igbinary_serialize: cannot serialize session variables");
 		return ZSTR_EMPTY_ALLOC();

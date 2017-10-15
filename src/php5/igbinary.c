@@ -504,6 +504,19 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 {
 	struct igbinary_serialize_data igsd;
 	uint8_t *tmpbuf;
+	zval *session_vars = PS(http_session_vars);
+	HashTable *h = HASH_OF(session_vars);
+	long num_elements = h ? zend_hash_num_elements(h) : 0;
+	if (num_elements == 0) {
+		// Return the empty string for the empty array.
+		smart_str buf = {0};
+		smart_str_0(&buf);
+		if (newlen) {
+			*newlen = 0;
+		}
+		*newstr = buf.c;
+		return SUCCESS;
+	}
 
 	if (igbinary_serialize_data_init(&igsd, false, NULL TSRMLS_CC)) {
 		zend_error(E_WARNING, "igbinary_serialize: cannot init igsd");
@@ -516,7 +529,7 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 		return FAILURE;
 	}
 
-	if (igbinary_serialize_array(&igsd, PS(http_session_vars), false, false TSRMLS_CC) != 0) {
+	if (igbinary_serialize_array(&igsd, session_vars, false, false TSRMLS_CC) != 0) {
 		igbinary_serialize_data_deinit(&igsd, 1 TSRMLS_CC);
 		return FAILURE;
 	}
@@ -875,8 +888,6 @@ inline static int igbinary_serialize_double(struct igbinary_serialize_data *igsd
  * Serializes each string once, after first time uses pointers.
  */
 inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd, char *s, size_t len TSRMLS_DC) {
-	uint32_t t;
-	uint32_t *i = &t;
 
 	if (len == 0) {
 		if (igbinary_serialize8(igsd, igbinary_type_string_empty TSRMLS_CC) != 0) {
