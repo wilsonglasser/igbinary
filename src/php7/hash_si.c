@@ -88,7 +88,7 @@ inline static size_t _hash_si_find(const struct hash_si *h, const char *key, con
 	while (size > 0 &&
 		h->data[hv].key != NULL &&
 		(h->data[hv].key_hash != key_hash || h->data[hv].key_len != key_len || UNEXPECTED(memcmp(h->data[hv].key, key, key_len) != 0))) {
-		/* linear prob */
+		/* linear probing */
 		hv = (hv + 1) & mask;
 		size--;
 	}
@@ -171,15 +171,18 @@ int hash_si_find(struct hash_si *h, const char *key, size_t key_len, uint32_t *v
 */
 /* }}} */
 /* {{{ hash_si_find_or_insert */
-struct hash_si_result hash_si_find_or_insert(struct hash_si *h, const char *key, size_t key_len, uint32_t value) {
+struct hash_si_result hash_si_find_or_insert(struct hash_si *h, zend_string *key_zstr, uint32_t value) {
 	uint32_t hv;
 	uint32_t key_hash;
 	struct hash_si_result result;
 	struct hash_si_pair *pair;
+	const char* key;
+	size_t key_len;
 
-	assert(h != NULL);
-
-	key_hash = zend_inline_hash_func(key, key_len);
+	ZEND_ASSERT(h != NULL);
+	key = ZSTR_VAL(key_zstr);
+	key_len = ZSTR_LEN(key_zstr);
+	key_hash = ZSTR_HASH(key_zstr);  // TODO: convert to ZSTR_HASH
 	hv = _hash_si_find(h, key, key_len, key_hash);
 	pair = &h->data[hv];
 
