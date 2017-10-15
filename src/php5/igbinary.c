@@ -721,7 +721,7 @@ inline static int igbinary_serialize_resize(struct igbinary_serialize_data *igsd
 /* {{{ igbinary_serialize8 */
 /** Serialize 8bit value. */
 inline static int igbinary_serialize8(struct igbinary_serialize_data *igsd, uint8_t i TSRMLS_DC) {
-	if (igbinary_serialize_resize(igsd, 1 TSRMLS_CC)) {
+	if (UNEXPECTED(igbinary_serialize_resize(igsd, 1 TSRMLS_CC))) {
 		return 1;
 	}
 
@@ -732,12 +732,15 @@ inline static int igbinary_serialize8(struct igbinary_serialize_data *igsd, uint
 /* {{{ igbinary_serialize16 */
 /** Serialize 16bit value. */
 inline static int igbinary_serialize16(struct igbinary_serialize_data *igsd, uint16_t i TSRMLS_DC) {
-	if (igbinary_serialize_resize(igsd, 2 TSRMLS_CC)) {
+	uint8_t* append_buffer;
+	if (UNEXPECTED(igbinary_serialize_resize(igsd, 2 TSRMLS_CC))) {
 		return 1;
 	}
 
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 8 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i & 0xff);
+	append_buffer = &igsd->buffer[igsd->buffer_size];
+	append_buffer[0] = (uint8_t) (i >> 8 & 0xff);
+	append_buffer[1] = (uint8_t) (i & 0xff);
+	igsd->buffer_size += 2;
 
 	return 0;
 }
@@ -745,14 +748,17 @@ inline static int igbinary_serialize16(struct igbinary_serialize_data *igsd, uin
 /* {{{ igbinary_serialize32 */
 /** Serialize 32bit value. */
 inline static int igbinary_serialize32(struct igbinary_serialize_data *igsd, uint32_t i TSRMLS_DC) {
-	if (igbinary_serialize_resize(igsd, 4 TSRMLS_CC)) {
+	uint8_t* append_buffer;
+	if (UNEXPECTED(igbinary_serialize_resize(igsd, 4 TSRMLS_CC))) {
 		return 1;
 	}
 
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 24 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 16 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 8 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i & 0xff);
+	append_buffer = &igsd->buffer[igsd->buffer_size];
+	append_buffer[0] = (uint8_t) (i >> 24 & 0xff);
+	append_buffer[1] = (uint8_t) (i >> 16 & 0xff);
+	append_buffer[2] = (uint8_t) (i >> 8 & 0xff);
+	append_buffer[3] = (uint8_t) (i & 0xff);
+	igsd->buffer_size += 4;
 
 	return 0;
 }
@@ -760,18 +766,21 @@ inline static int igbinary_serialize32(struct igbinary_serialize_data *igsd, uin
 /* {{{ igbinary_serialize64 */
 /** Serialize 64bit value. */
 inline static int igbinary_serialize64(struct igbinary_serialize_data *igsd, uint64_t i TSRMLS_DC) {
-	if (igbinary_serialize_resize(igsd, 8 TSRMLS_CC)) {
+	uint8_t* append_buffer;
+	if (UNEXPECTED(igbinary_serialize_resize(igsd, 8 TSRMLS_CC))) {
 		return 1;
 	}
 
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 56 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 48 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 40 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 32 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 24 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 16 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i >> 8 & 0xff);
-	igsd->buffer[igsd->buffer_size++] = (uint8_t) (i & 0xff);
+	append_buffer = &igsd->buffer[igsd->buffer_size];
+	append_buffer[0] = (uint8_t) (i >> 56 & 0xff);
+	append_buffer[1] = (uint8_t) (i >> 48 & 0xff);
+	append_buffer[2] = (uint8_t) (i >> 40 & 0xff);
+	append_buffer[3] = (uint8_t) (i >> 32 & 0xff);
+	append_buffer[4] = (uint8_t) (i >> 24 & 0xff);
+	append_buffer[5] = (uint8_t) (i >> 16 & 0xff);
+	append_buffer[6] = (uint8_t) (i >> 8 & 0xff);
+	append_buffer[7] = (uint8_t) (i & 0xff);
+	igsd->buffer_size += 8;
 
 	return 0;
 }
@@ -1297,8 +1306,6 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 /* {{{ igbinary_serialize_object_name */
 /** Serialize object name. */
 inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, const char *class_name, size_t name_len TSRMLS_DC) {
-	uint32_t t;
-
 	struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, class_name, name_len, igsd->string_count);
 	if (result.code == hash_si_code_inserted) {
 		igsd->string_count += 1;
@@ -1682,35 +1689,41 @@ inline static uint8_t igbinary_unserialize8(struct igbinary_unserialize_data *ig
 /* {{{ igbinary_unserialize16 */
 /** Unserialize 16bit value. */
 inline static uint16_t igbinary_unserialize16(struct igbinary_unserialize_data *igsd TSRMLS_DC) {
-	uint16_t ret = 0;
-	ret |= ((uint16_t) igsd->buffer[igsd->buffer_offset++] << 8);
-	ret |= ((uint16_t) igsd->buffer[igsd->buffer_offset++] << 0);
+	const uint8_t* buffer_ptr = &igsd->buffer[igsd->buffer_offset];
+	uint16_t ret =
+	       ((uint16_t) (buffer_ptr[0]) << 8) |
+	       ((uint16_t) (buffer_ptr[1]));
+	igsd->buffer_offset += 2;
 	return ret;
 }
 /* }}} */
 /* {{{ igbinary_unserialize32 */
 /** Unserialize 32bit value. */
 inline static uint32_t igbinary_unserialize32(struct igbinary_unserialize_data *igsd TSRMLS_DC) {
-	uint32_t ret = 0;
-	ret |= ((uint32_t) igsd->buffer[igsd->buffer_offset++] << 24);
-	ret |= ((uint32_t) igsd->buffer[igsd->buffer_offset++] << 16);
-	ret |= ((uint32_t) igsd->buffer[igsd->buffer_offset++] << 8);
-	ret |= ((uint32_t) igsd->buffer[igsd->buffer_offset++] << 0);
+	const uint8_t* buffer_ptr = &igsd->buffer[igsd->buffer_offset];
+	uint32_t ret =
+	       ((uint32_t) (buffer_ptr[0]) << 24) |
+	       ((uint32_t) (buffer_ptr[1]) << 16) |
+	       ((uint32_t) (buffer_ptr[2]) << 8)  |
+	       ((uint32_t) (buffer_ptr[3]));
+	igsd->buffer_offset += 4;
 	return ret;
 }
 /* }}} */
 /* {{{ igbinary_unserialize64 */
 /** Unserialize 64bit value. */
 inline static uint64_t igbinary_unserialize64(struct igbinary_unserialize_data *igsd TSRMLS_DC) {
-	uint64_t ret = 0;
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 56);
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 48);
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 40);
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 32);
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 24);
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 16);
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 8);
-	ret |= ((uint64_t) igsd->buffer[igsd->buffer_offset++] << 0);
+	const uint8_t* buffer_ptr = &igsd->buffer[igsd->buffer_offset];
+	uint64_t ret =
+	       ((uint64_t) (buffer_ptr[0]) << 56) |
+	       ((uint64_t) (buffer_ptr[1]) << 48) |
+	       ((uint64_t) (buffer_ptr[2]) << 40) |
+	       ((uint64_t) (buffer_ptr[3]) << 32) |
+	       ((uint64_t) (buffer_ptr[4]) << 24) |
+	       ((uint64_t) (buffer_ptr[5]) << 16) |
+	       ((uint64_t) (buffer_ptr[6]) << 8)  |
+	       ((uint64_t) (buffer_ptr[7]) << 0);
+	igsd->buffer_offset += 8;
 	return ret;
 }
 /* }}} */
