@@ -20,9 +20,9 @@ $z = "1234";
 $w = 1234;
 var_dump(isset($data->{$x}) ? $data->{$x} : "unset");
 error_reporting(0);
-$str = serialize($data);
+$str = igbinary_serialize($data);
 
-$unserialized = unserialize($str);
+$unserialized = igbinary_unserialize($str);
 var_dump($unserialized);
 var_dump(isset($unserialized->{$x}) ? $unserialized->{$x} : "unset str");
 var_dump(isset($unserialized->{$y}) ? $unserialized->{$y} : "unset int");
