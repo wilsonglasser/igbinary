@@ -1,4 +1,4 @@
-2.0.5 2017-?-? (dev)
+2.0.5RC1 2017-10-15
 ========
 * Improve performance when unserializing objects/arrays and serializing objects/arrays/strings in php 5/7.
 * Update unserialization of integer object keys for php 7.2: Make those keys accessible when unserializing.
