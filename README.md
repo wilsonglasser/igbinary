@@ -31,7 +31,7 @@ Features
 - Tested on Linux amd64, Linux ARM, Mac OSX x86, HP-UX PA-RISC and NetBSD sparc64
 - Hooks up to APC opcode cache as a serialization handler (APC 3.1.7+)
   (Hooks up to the substitute APCu for recent php releases)
-- Compatible with PHP 5.2 &ndash; 5.6, 7.0 &ndash; 7.1
+- Compatible with PHP 5.2 &ndash; 5.6, 7.0 &ndash; 7.2
 
 Implementation details
 ----------------------
