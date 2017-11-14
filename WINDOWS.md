@@ -44,11 +44,11 @@ Building igbinary
 
 See https://wiki.php.net/internals/windows/stepbystepbuild#building\_pecl\_extensions
 
-### Install APCU (optional)
+### Install APCu (optional)
 
 Note: The Windows build hasn't worked for a while in 5.6, so there may be compilation errors or test failures.
 
-TODO: Make sure that `config.w32` works without APCU installed.
+TODO: Make sure that `config.w32` works without APCu installed.
 
 > 1. Open the extension's page on PECL ([APCu](https://pecl.php.net/package/APCu))
 > 2. Download the extension source either by:
