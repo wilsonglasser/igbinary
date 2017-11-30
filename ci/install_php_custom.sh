@@ -10,14 +10,14 @@
 #  CC
 #  PATH
 echo "Attempting to install PHP from source, PHP version '$PHP_CUSTOM_VERSION'/ configure args '$PHP_CONFIGURE_ARGS'"
-if [ "x$PHP_CUSTOM_VERSION" = "x" -o "x$PHP_CONFIGURE_ARGS" = "x" ] ; then 
+if [ "x$PHP_CUSTOM_VERSION" = "x" -o "x$PHP_CONFIGURE_ARGS" = "x" ] ; then
 	echo "Missing php version or configuration arguments";
 	exit 1;
 fi
 PHP_FOLDER="php-$PHP_CUSTOM_VERSION"
 PHP_INSTALL_DIR="$(./ci/generate_php_install_dir.sh)"
 echo "Downloading $PHP_INSTALL_DIR\n"
-if [ -x $PHP_INSTALL_DIR/bin/php ] ; then 
+if [ -x $PHP_INSTALL_DIR/bin/php ] ; then
 	echo "PHP $PHP_CUSTOM_VERSION already installed and in cache at $PHP_INSTALL_DIR";
 	exit 0
 fi
@@ -31,12 +31,7 @@ if [ "x${TRAVIS:-0}" != "x" ]; then
 fi
 # Otherwise, put a minimal installation inside of the cache.
 PHP_TAR_FILE="$PHP_FOLDER.tar.bz2"
-if [ "$PHP_CUSTOM_NORMAL_VERSION" != "7.2.0" ] ; then
-    curl --verbose https://secure.php.net/distributions/$PHP_TAR_FILE -o $PHP_TAR_FILE
-else
-    curl --verbose https://downloads.php.net/~pollita/php-7.2.0RC6.tar.bz2 -o $PHP_TAR_FILE
-    PHP_FOLDER="php-7.2.0RC6"
-fi
+curl --verbose https://secure.php.net/distributions/$PHP_TAR_FILE -o $PHP_TAR_FILE
 
 tar xjf $PHP_TAR_FILE
 
