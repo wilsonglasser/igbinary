@@ -67,7 +67,7 @@ if test "$PHP_IGBINARY" != "no"; then
   elif test "$GCC" = yes; then
     AC_MSG_RESULT(gcc)
     if test -z "`echo $CFLAGS | grep -- '-O[0123]'`"; then
-      PHP_IGBINARY_CFLAGS="$CFLAGS -O2 -Wall -Wpointer-arith -Wmissing-prototypes -Wstrict-prototypes -Wcast-align -Wshadow -Wwrite-strings -Wswitch -finline-limit=10000 --param large-function-growth=10000 --param inline-unit-growth=10000"
+      PHP_IGBINARY_CFLAGS="$CFLAGS -O2 -Wall -Wpointer-arith -Wcast-align -Wwrite-strings -Wswitch -finline-limit=10000 --param large-function-growth=10000 --param inline-unit-growth=10000"
     fi
   elif test "$ICC" = yes; then
     AC_MSG_RESULT(icc)
