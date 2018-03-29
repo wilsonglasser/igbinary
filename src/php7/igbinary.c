@@ -438,7 +438,7 @@ static int igbinary_finish_wakeup(struct igbinary_unserialize_data* igsd) {
 		zend_object *obj = igsd->wakeup[i];
 		ZVAL_OBJ(&rval, obj);
 		if (call_user_function_ex(CG(function_table), &rval, &fname, &retval, 0, 0, 1, NULL) == FAILURE || Z_ISUNDEF(retval)) {
-			GC_FLAGS(obj) |= IS_OBJ_DESTRUCTOR_CALLED;
+			GC_ADD_FLAGS(obj, IS_OBJ_DESTRUCTOR_CALLED);
 		}
 		zval_ptr_dtor(&retval);
 		if (EG(exception)) {
@@ -446,7 +446,7 @@ static int igbinary_finish_wakeup(struct igbinary_unserialize_data* igsd) {
 			zval_dtor(&fname);
 			/* Don't call __destruct for any of the objects which __wakeup wasn't called on yet, either */
 			for (j = i + 1; j < igsd->wakeup_count; j++) {
-				GC_FLAGS(igsd->wakeup[j]) |= IS_OBJ_DESTRUCTOR_CALLED;
+				GC_ADD_FLAGS(igsd->wakeup[j], IS_OBJ_DESTRUCTOR_CALLED);
 			}
 			return 1;
 		}

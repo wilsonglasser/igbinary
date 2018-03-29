@@ -88,8 +88,13 @@ PHP_FUNCTION(igbinary_unserialize);
 #ifndef Z_ADDREF_PP
 #define Z_ADDREF_PP(ppz)               Z_ADDREF_P(*(ppz))
 #endif
-#endif /* PHP_IGBINARY_H */
 
+/** Backport macros from php 7.3 */
+#ifndef GC_ADD_FLAGS
+#define GC_ADD_FLAGS(obj, flag) GC_FLAGS(obj) |= flag
+#endif
+
+#endif /* PHP_IGBINARY_H */
 
 /*
  * Local variables:
