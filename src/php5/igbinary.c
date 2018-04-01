@@ -22,6 +22,9 @@
 #include "ext/standard/info.h"
 #include "ext/standard/php_var.h"
 
+/** Add macros missing from php 5.2 */
+#include "igbinary_macros.h"
+
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 # include "ext/session/php_session.h"
 #endif /* HAVE_PHP_SESSION */
