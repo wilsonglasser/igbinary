@@ -31,19 +31,22 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2017-11-04</date>
+ <date>2017-04-01</date>
  <time>16:00:00</time>
  <version>
-  <release>2.0.5</release>
+  <release>2.0.6RC1</release>
   <api>1.1.1</api>
  </version>
  <stability>
-  <release>stable</release>
+  <release>beta</release>
   <api>stable</api>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Same as 2.0.5RC1 (no bugs were reported in that release candidate)
+* Fix a bug in windows debug builds.
+* Emit more specific warnings when __sleep() returns a declared property that was unset
+* Fix harmless compiler warnings during builds
+* Fix a build error on PHP7.3-dev.
  </notes>
  <contents>
   <dir name="/">
@@ -105,6 +108,7 @@
     <file name="igbinary_023.phpt" role="test" />
     <file name="igbinary_024.phpt" role="test" />
     <file name="igbinary_025.phpt" role="test" />
+    <file name="igbinary_025b.phpt" role="test" />
     <file name="igbinary_026.phpt" role="test" />
     <file name="igbinary_026b.phpt" role="test" />
     <file name="igbinary_027.phpt" role="test" />
@@ -140,6 +144,12 @@
     <file name="igbinary_053.phpt" role="test" />
     <file name="igbinary_054.phpt" role="test" />
     <file name="igbinary_055.phpt" role="test" />
+    <file name="igbinary_056.diff" role="test" />
+    <file name="igbinary_056.exp" role="test" />
+    <file name="igbinary_056.log" role="test" />
+    <file name="igbinary_056.out" role="test" />
+    <file name="igbinary_056.php" role="test" />
+    <file name="igbinary_056.sh" role="test" />
     <file name="igbinary_057.phpt" role="test" />
     <file name="igbinary_058.phpt" role="test" />
     <file name="igbinary_058b.phpt" role="test" />
@@ -147,10 +157,12 @@
     <file name="igbinary_060.phpt" role="test" />
     <file name="igbinary_061.phpt" role="test" />
     <file name="igbinary_062.phpt" role="test" />
+    <file name="igbinary_063.phpt" role="test" />
     <file name="igbinary_063_php72.phpt" role="test" />
     <file name="igbinary_063_php7.phpt" role="test" />
-    <file name="igbinary_063.phpt" role="test" />
     <file name="igbinary_064.phpt" role="test" />
+    <file name="igbinary_065.phpt" role="test" />
+    <file name="igbinary_065_php5.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
@@ -170,6 +182,25 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2018-04-01</date>
+   <time>16:00:00</time>
+   <version>
+    <release>2.0.6RC1</release>
+    <api>1.1.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Fix a bug in windows debug builds.
+* Emit more specific warnings when __sleep() returns a declared property that was unset
+* Fix harmless compiler warnings during builds
+* Fix a build error on PHP7.3-dev.
+   </notes>
+  </release>
   <release>
    <date>2017-11-04</date>
    <time>16:00:00</time>
