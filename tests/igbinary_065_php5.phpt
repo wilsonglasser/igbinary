@@ -2,8 +2,8 @@
 Don't emit zval has unknown type 0 (IS_UNDEF)
 --SKIPIF--
 <?php
-if (PHP_MAJOR_VERSION < 7) {
-	exit('skip a separate test case tests php5');
+if (PHP_MAJOR_VERSION > 5) {
+	exit('skip regression test for php 5 behavior');
 }
 ?>
 --FILE--
@@ -25,7 +25,7 @@ class MyClass {
         $this->set = 'setVal';
         $this->priv = null;
         $this->omitted = 'otherVal';
-
+		// TODO: php5 misbehaves - It can't find the property definition, so creates a *public* property for y and z
         return ['kept', 'x', 'y', 'z', 'set', 'priv'];
     }
 }
@@ -42,7 +42,7 @@ Notice: igbinary_serialize(): "x" returned as member variable from __sleep() but
 Notice: igbinary_serialize(): "y" returned as member variable from __sleep() but does not exist in %s on line 25
 
 Notice: igbinary_serialize(): "z" returned as member variable from __sleep() but does not exist in %s on line 25
-0000000217074d79436c617373140611046b6570740602110178001104002a007900110a004d79436c617373007a001106002a00736574110673657456616c110d004d79436c617373007072697600
+0000000217074d79436c617373140611046b6570740602110178001101790011017a001106002a00736574110673657456616c110d004d79436c617373007072697600
 MyClass::__set_state(array(
    'kept' => 2,
    'x' => NULL,
@@ -51,4 +51,6 @@ MyClass::__set_state(array(
    'set' => 'setVal',
    'priv' => NULL,
    'omitted' => 'myVal',
+   'y' => NULL,
+   'z' => NULL,
 ))

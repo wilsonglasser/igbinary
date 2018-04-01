@@ -2556,7 +2556,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 	}
 
 	{
-		struct igbinary_value_ref ref;
+		struct igbinary_value_ref ref = {0};
 		ref_n = igsd_append_ref(igsd, ref);
 		if (ref_n == SIZE_MAX) {
 			zend_string_release(class_name);
