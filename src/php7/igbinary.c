@@ -35,6 +35,7 @@
 #include "php_igbinary.h"
 
 #include "igbinary.h"
+#include "igbinary_macros.h"
 
 #include <assert.h>
 #include <ctype.h>
