@@ -1708,7 +1708,7 @@ static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z
 /* {{{ igbinary_unserialize_data_init */
 /** Inits igbinary_unserialize_data_init. */
 inline static int igbinary_unserialize_data_init(struct igbinary_unserialize_data *igsd) {
-	smart_string empty_str = { 0 };
+	smart_string empty_str = {0, 0, 0};
 
 	igsd->buffer = NULL;
 	igsd->buffer_end = NULL;
@@ -2556,7 +2556,8 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 	}
 
 	{
-		struct igbinary_value_ref ref = {0};
+		// The actual value of ref is unused. We use ref_n later in this function, after creating the object.
+		struct igbinary_value_ref ref = {{0}, 0};
 		ref_n = igsd_append_ref(igsd, ref);
 		if (ref_n == SIZE_MAX) {
 			zend_string_release(class_name);
