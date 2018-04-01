@@ -1334,6 +1334,11 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 				if (Z_TYPE_P(v) == IS_INDIRECT) {
 					v = Z_INDIRECT_P(v);
 				}
+				if (UNEXPECTED(Z_TYPE_P(v) == IS_UNDEF)) {
+					php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_P(d));
+					igbinary_serialize_null(igsd);
+					continue;
+				}
 				if (igbinary_serialize_zval(igsd, v) != 0) {
 					return 1;
 				}
@@ -1384,6 +1389,12 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 					}
 
 					zend_string_release(mangled_prop_name);
+
+					if (UNEXPECTED(Z_TYPE_P(v) == IS_UNDEF)) {
+						php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_P(d));
+						igbinary_serialize_null(igsd);
+						break;
+					}
 					if (igbinary_serialize_zval(igsd, v) != 0) {
 						return 1;
 					}
@@ -1676,8 +1687,8 @@ static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z
 		case IS_NULL:
 			return igbinary_serialize_null(igsd);
 		case IS_UNDEF:
-			// As of php 7.1.3, started seeing "zval has unknown type 0"
-			zend_error(E_WARNING, "igbinary_serialize_zval: zval has unexpected type IS_UNDEF(0)");
+			// https://github.com/igbinary/igbinary/issues/134
+			// TODO: In a new major version, could have a separate type for IS_UNDEF, which would unset the property in an object context?
 			return igbinary_serialize_null(igsd);
 		case IS_TRUE:
 			return igbinary_serialize_bool(igsd, 1);
@@ -2545,7 +2556,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 	}
 
 	{
-		struct igbinary_value_ref ref;
+		struct igbinary_value_ref ref = {0};
 		ref_n = igsd_append_ref(igsd, ref);
 		if (ref_n == SIZE_MAX) {
 			zend_string_release(class_name);
