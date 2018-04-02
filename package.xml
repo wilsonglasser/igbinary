@@ -145,12 +145,6 @@
     <file name="igbinary_053.phpt" role="test" />
     <file name="igbinary_054.phpt" role="test" />
     <file name="igbinary_055.phpt" role="test" />
-    <file name="igbinary_056.diff" role="test" />
-    <file name="igbinary_056.exp" role="test" />
-    <file name="igbinary_056.log" role="test" />
-    <file name="igbinary_056.out" role="test" />
-    <file name="igbinary_056.php" role="test" />
-    <file name="igbinary_056.sh" role="test" />
     <file name="igbinary_057.phpt" role="test" />
     <file name="igbinary_058.phpt" role="test" />
     <file name="igbinary_058b.phpt" role="test" />
