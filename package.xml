@@ -43,9 +43,9 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix a bug in windows debug builds.
-* Emit more specific warnings when __sleep() returns a declared property that was unset
-* Fix harmless compiler warnings during builds
+* Fix a bug in Windows debug builds.
+* Emit more specific warnings when __sleep() returns a declared property that was unset.
+* Fix harmless compiler warnings during builds.
 * Fix a build error on PHP7.3-dev.
  </notes>
  <contents>
@@ -190,9 +190,9 @@
    </stability>
    <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
    <notes>
-* Fix a bug in windows debug builds.
-* Emit more specific warnings when __sleep() returns a declared property that was unset
-* Fix harmless compiler warnings during builds
+* Fix a bug in Windows debug builds.
+* Emit more specific warnings when __sleep() returns a declared property that was unset.
+* Fix harmless compiler warnings during builds.
 * Fix a build error on PHP7.3-dev.
    </notes>
   </release>

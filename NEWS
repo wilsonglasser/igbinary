@@ -1,3 +1,11 @@
+2.0.6 2018-04-01
+=======
+
+* Fix a bug in Windows debug builds.
+* Emit more specific warnings when __sleep() returns a declared property that was unset.
+* Fix harmless compiler warnings during builds.
+* Fix a build error on PHP7.3-dev.
+
 2.0.5 2017-11-04
 ========
 
