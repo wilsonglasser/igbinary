@@ -38,11 +38,12 @@
   <api>1.1.1</api>
  </version>
  <stability>
-  <release>beta</release>
+  <release>stable</release>
   <api>stable</api>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
+* Same as 2.0.6RC1
 * Fix a bug in Windows debug builds.
 * Emit more specific warnings when __sleep() returns a declared property that was unset.
 * Fix harmless compiler warnings during builds.
