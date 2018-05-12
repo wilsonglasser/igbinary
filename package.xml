@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2018-04-01</date>
+ <date>2018-05-12</date>
  <time>16:00:00</time>
  <version>
-  <release>2.0.6RC1</release>
+  <release>2.0.6</release>
   <api>1.1.1</api>
  </version>
  <stability>
@@ -178,10 +178,10 @@
  <extsrcrelease />
  <changelog>
   <release>
-   <date>2018-04-01</date>
+   <date>2018-05-12</date>
    <time>16:00:00</time>
    <version>
-    <release>2.0.6RC1</release>
+    <release>2.0.6</release>
     <api>1.1.1</api>
    </version>
    <stability>
@@ -190,6 +190,23 @@
    </stability>
    <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
    <notes>
+* Same as 2.0.6RC1
+   </notes>
+  </release>
+  <release>
+   <date>2018-04-01</date>
+   <time>16:00:00</time>
+   <version>
+    <release>2.0.6RC1</release>
+    <api>1.1.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Same as 2.0.6RC1
 * Fix a bug in Windows debug builds.
 * Emit more specific warnings when __sleep() returns a declared property that was unset.
 * Fix harmless compiler warnings during builds.
