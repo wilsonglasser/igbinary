@@ -1939,7 +1939,7 @@ inline static int igbinary_unserialize_long(struct igbinary_unserialize_data *ig
 #endif
 	} else {
 		*ret = 0;
-		zend_error(E_WARNING, "igbinary_unserialize_long: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_long: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return 1;
 	}
 
@@ -1993,7 +1993,7 @@ inline static zend_string* igbinary_unserialize_string(struct igbinary_unseriali
 		}
 		i = igbinary_unserialize32(igsd);
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_string: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_string: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return NULL;
 	}
 
@@ -2054,7 +2054,7 @@ inline static zend_string* igbinary_unserialize_chararray(struct igbinary_unseri
 			return NULL;
 		}
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_chararray: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_chararray: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return NULL;
 	}
 
@@ -2118,13 +2118,13 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 		}
 		n = igbinary_unserialize32(igsd);
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_array: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_array: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return 1;
 	}
 
 	/* n cannot be larger than the number of minimum "objects" in the array */
 	if (IGB_NEEDS_MORE_DATA(igsd, n)) {
-		zend_error(E_WARNING, "igbinary_unserialize_array: data size %zu smaller that requested array length %zu.", IGB_REMAINING_BYTES(igsd), (unsigned int) n);
+		zend_error(E_WARNING, "igbinary_unserialize_array: data size %zu smaller that requested array length %zu.", (size_t)IGB_REMAINING_BYTES(igsd), (size_t) n);
 		return 1;
 	}
 
@@ -2212,7 +2212,7 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 			case igbinary_type_null:
 				continue;
 			default:
-				zend_error(E_WARNING, "igbinary_unserialize_array: unknown key type '%02x', position %zu", key_type, IGB_BUFFER_OFFSET(igsd));
+				zend_error(E_WARNING, "igbinary_unserialize_array: unknown key type '%02x', position %zu", key_type, (size_t)IGB_BUFFER_OFFSET(igsd));
 				zval_dtor(z);
 				ZVAL_UNDEF(z);
 				return 1;
@@ -2281,13 +2281,13 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 		}
 		n = igbinary_unserialize32(igsd);
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_array: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_array: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return 1;
 	}
 
 	/* n cannot be larger than the number of minimum "objects" in the array */
 	if (IGB_NEEDS_MORE_DATA(igsd, n)) {
-		zend_error(E_WARNING, "%s: data size %zu smaller that requested array length %zu.", "igbinary_unserialize_array", IGB_REMAINING_BYTES(igsd), n);
+		zend_error(E_WARNING, "%s: data size %zu smaller that requested array length %zu.", "igbinary_unserialize_array", (size_t)IGB_REMAINING_BYTES(igsd), (size_t)n);
 		return 1;
 	}
 
@@ -2365,7 +2365,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 			case igbinary_type_null:
 				continue;  /* Skip unserializing this element, serialized with no value. In C, this applies to loop, not switch. */
 			default:
-				zend_error(E_WARNING, "igbinary_unserialize_array: unknown key type '%02x', position %zu", key_type, IGB_BUFFER_OFFSET(igsd));
+				zend_error(E_WARNING, "igbinary_unserialize_array: unknown key type '%02x', position %zu", key_type, (size_t)IGB_BUFFER_OFFSET(igsd));
 				zval_dtor(z);
 				ZVAL_UNDEF(z);
 				return 1;
@@ -2419,7 +2419,8 @@ inline static int igbinary_unserialize_object_ser(struct igbinary_unserialize_da
 	php_unserialize_data_t var_hash;
 
 	if (ce->unserialize == NULL) {
-		zend_error(E_WARNING, "Class %s has no unserializer", ce->name);
+		// Should be impossible.
+		zend_error(E_WARNING, "Class %s has no unserializer", ZSTR_VAL(ce->name));
 		return 1;
 	}
 
@@ -2442,7 +2443,7 @@ inline static int igbinary_unserialize_object_ser(struct igbinary_unserialize_da
 		}
 		n = igbinary_unserialize32(igsd);
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_object_ser: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_object_ser: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return 1;
 	}
 
@@ -2491,7 +2492,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 	} else if (t == igbinary_type_object_id8 || t == igbinary_type_object_id16 || t == igbinary_type_object_id32) {
 		class_name = igbinary_unserialize_string(igsd, t);
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_object: unknown object type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_object: unknown object type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return 1;
 	}
 
@@ -2619,7 +2620,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 			break;
 		}
 		default:
-			zend_error(E_WARNING, "igbinary_unserialize_object: unknown object inner type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+			zend_error(E_WARNING, "igbinary_unserialize_object: unknown object inner type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 			r = 1;
 	}
 	zend_string_release(class_name);
@@ -2637,12 +2638,12 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 		} else if (ref->type == IG_REF_IS_REFERENCE) {
 			ztemp = ref->reference.reference->val;
 			if (Z_TYPE(ztemp) != IS_OBJECT) {
-				zend_error(E_WARNING, "igbinary_unserialize_object preparing to __wakeup: got reference to non-object somehow", t, IGB_BUFFER_OFFSET(igsd));
+				zend_error(E_WARNING, "igbinary_unserialize_object preparing to __wakeup: got reference to non-object somehow (inner type '%02x', position %zu)", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 				return 1;
 			}
 			object = Z_OBJ(ztemp);
 		} else {
-			zend_error(E_WARNING, "igbinary_unserialize_object preparing to __wakeup: created non-object somehow", t, IGB_BUFFER_OFFSET(igsd));
+			zend_error(E_WARNING, "igbinary_unserialize_object preparing to __wakeup: created non-object somehow (inner type '%02x', position %zu)", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 			return 1;
 		}
 		zend_class_entry *ztemp_ce;
@@ -2685,12 +2686,12 @@ inline static int igbinary_unserialize_ref(struct igbinary_unserialize_data *igs
 		}
 		n = igbinary_unserialize32(igsd);
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_ref: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_ref: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return 1;
 	}
 
 	if (n >= igsd->references_count) {
-		zend_error(E_WARNING, "igbinary_unserialize_ref: invalid reference %zu >= %zu", (int) n, (int)igsd->references_count);
+		zend_error(E_WARNING, "igbinary_unserialize_ref: invalid reference %zu >= %zu", (size_t) n, (size_t)igsd->references_count);
 		return 1;
 	}
 
@@ -2883,7 +2884,7 @@ static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zva
 			ZVAL_DOUBLE(z, tmp_double);
 			break;
 		default:
-			zend_error(E_WARNING, "igbinary_unserialize_zval: unknown type '%02x', position %zu", t, IGB_BUFFER_OFFSET(igsd));
+			zend_error(E_WARNING, "igbinary_unserialize_zval: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 			return 1;
 	}
 
