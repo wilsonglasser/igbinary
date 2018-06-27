@@ -1,3 +1,8 @@
+2.0.7 2018-06-27
+=======
+
+* Fix compiler warnings about format strings, for errors that should not occur during normal igbinary usage.
+
 2.0.6 2018-05-12
 =======
 
