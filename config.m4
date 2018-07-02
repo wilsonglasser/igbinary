@@ -22,13 +22,13 @@ if test "$PHP_IGBINARY" != "no"; then
 
   AC_MSG_CHECKING(PHP version)
 
-  AC_TRY_COMPILE([
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
   #include <$phpincludedir/main/php_version.h>
-  ],[
+  ]], [[
 #if PHP_MAJOR_VERSION > 5
 #error PHP > 5
 #endif
-  ],[
+  ]])],[
   subdir=src/php5
   PHP_IGBINARY_SRC_FILES="$subdir/igbinary.c $subdir/hash_si.c $subdir/hash_si_ptr.c"
   AC_MSG_RESULT([PHP 5])
