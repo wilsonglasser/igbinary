@@ -75,9 +75,9 @@ script:
   - phpize
   - ./configure --enable-igbinary
   - make
-  - REPORT_EXIT_STATUS=1 NO_INTERACTION=1 make test
+  - REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="--show-diff" make test
   # For most travis builds, re-run `make test` with valgrind.
-  - if [ "x$SKIP_VALGRIND" = "x" ]; then export TEST_PHP_ARGS="-m"; REPORT_EXIT_STATUS=1 NO_INTERACTION=1 make test; fi
+  - if [ "x$SKIP_VALGRIND" = "x" ]; then export TEST_PHP_ARGS="-m --show-diff"; REPORT_EXIT_STATUS=1 NO_INTERACTION=1 make test; fi
 
 branches:
   only:
