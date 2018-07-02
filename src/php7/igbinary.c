@@ -960,7 +960,7 @@ inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd
 			} else {
 				RETURN_1_IF_NON_ZERO(igbinary_serialize8(igsd, (uint8_t) igbinary_type_string_id32));
 
-				RETURN_1_IF_NON_ZERO(igbinary_serialize8(igsd, igbinary_serialize32(igsd, (uint32_t) value)));
+				RETURN_1_IF_NON_ZERO(igbinary_serialize32(igsd, (uint32_t) value));
 			}
 			return 0;
 		} else if (EXPECTED(result.code == hash_si_code_inserted)) {
@@ -971,8 +971,7 @@ inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd
 	}
 
 	igsd->string_count++; /* A new string is being serialized - update count so that duplicate class names can be used. */
-	RETURN_1_IF_NON_ZERO(igbinary_serialize_chararray(igsd, ZSTR_VAL(s), len));
-	return 0;
+	return igbinary_serialize_chararray(igsd, ZSTR_VAL(s), len);
 }
 /* }}} */
 /* {{{ igbinary_serialize_chararray */
