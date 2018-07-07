@@ -74,9 +74,10 @@ static int APC_SERIALIZER_NAME(igbinary) (APC_SERIALIZER_ARGS);
 static int APC_UNSERIALIZER_NAME(igbinary) (APC_UNSERIALIZER_ARGS);
 #endif
 
-#define RETURN_1_IF_NON_ZERO(cmd) if (UNEXPECTED((cmd) != 0)) { \
-	return 1; \
-}
+#define RETURN_1_IF_NON_ZERO(cmd) \
+	if (UNEXPECTED((cmd) != 0)) { \
+		return 1;                 \
+	}
 
 /* {{{ Types */
 enum igbinary_type {
