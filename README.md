@@ -49,11 +49,11 @@ The main reasons of this inefficiency are listed below, in order of significance
 Igbinary uses two strategies to minimize the size of the serialized
 output.
 
-1. Repetitive strings are stored only once. Collections of objects benefit
-   significantly from this. See the `igbinary.compact_strings` option.
+1. Repeated strings are stored only once (this also includes class and property names).
+   Collections of objects benefit significantly from this.
+   See the `igbinary.compact_strings` option.
 
-2. Numerical values are stored in the smallest primitive data type
-   available:
+2. Integer values are stored in the smallest primitive data type available:
     *123* = `int8_t`,
     *1234* = `int16_t`,
     *123456* = `int32_t`
