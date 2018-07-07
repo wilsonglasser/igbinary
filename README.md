@@ -40,7 +40,7 @@ Implementation details
 
 Storing complex PHP data structures such as arrays of associative arrays
 with the standard PHP serializer is not very space efficient.
-The main reasons in this inefficiency, in order of significance are (at least in our applications):
+The main reasons of this inefficiency are listed below, in order of significance (at least in our applications):
 
 1. Array keys, property names, and class names are repeated redundantly.
 2. Numerical values are plain text.
@@ -77,19 +77,42 @@ session.serialize_handler=igbinary
 ; The default is On.
 igbinary.compact_strings=On
 
-; Use igbinary as serializer in APC cache (3.1.7 or later)
+; If uncommented, use igbinary as the serializer of APCu
+; (For PHP 7, APCu 5.1.10 or newer is strongly recommended)
+; For older PHP versions, APC cache is also supported
+; (must be version 3.1.7 or newer)
 ;apc.serializer=igbinary
 ```
 
-Then, in your php code replace `serialize` and `unserialize` function calls
+Then, in your php code, replace `serialize` and `unserialize` function calls
 with `igbinary_serialize` and `igbinary_unserialize`.
 
 Installing
 ----------
 
-Note:
-Sometimes, phpize must be substituted with phpize5. In such cases the following
-option must be given to configure script: "--with-php-config=.../php-config5"
+### Linux
+
+If PHP was installed through your your package manager,
+the package manager may also contain prebuilt packages for `igbinary`
+(with a package name similar to php-igbinary)
+
+Igbinary may also be installed with the command `pecl install igbinary` (You will need to enable igbinary in php.ini)
+
+Alternately, you may wish to [build from source](#building-from-source)
+
+### MacOS
+
+`pecl install igbinary` is the recommended installation method (You will need to enable igbinary in php.ini)
+
+Alternately, you may wish to [build from source](#building-from-source).
+
+### Installing on Windows
+
+Prebuilt DLLs can be [downloaded from PECL](https://pecl.php.net/package/igbinary).
+
+If you are a contributor to/packager of igbinary, or need to build from source, see [WINDOWS.md](./WINDOWS.md)
+
+### Building from source
 
 1. `phpize`
 2. `./configure`
@@ -102,25 +125,6 @@ option must be given to configure script: "--with-php-config=.../php-config5"
 5. `make install`
 6. `igbinary.so` is installed to the default extension directory
 
-### To run APCu test cases
-
-```sh
-# go to modules directory
-cd modules
-
-# ... and create symlink to apcu extension
-# it will be loaded during test suite
-/opt/lib/php/extensions/no-debug-non-zts-20121212/apcu.so
-```
-
-A similar approach should work for APC.
-
-### Installing on Windows
-
-Prebuilt DLLs can be [downloaded from PECL](https://pecl.php.net/igbinary).
-
-If you are a contributor to/packager of igbinary, see [WINDOWS.md](./WINDOWS.md)
-
 Bugs & Contributions
 --------------------
 
@@ -132,6 +136,8 @@ https://github.com/igbinary/igbinary/issues
 
 The preferred way to contribute is with pull requests.
 Feel free to fork this at http://github.com/igbinary/igbinary
+
+See [TESTING.md](./TESTING.md) for advice for testing patches.
 
 Utilizing in other extensions
 -----------------------------
