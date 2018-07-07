@@ -40,7 +40,7 @@ int hash_si_init(struct hash_si *h, size_t size) {
 
 	h->mask = size - 1;
 	h->used = 0;
-	h->data = (struct hash_si_pair *) emalloc(sizeof(struct hash_si_pair) * size);
+	h->data = (struct hash_si_pair *)emalloc(sizeof(struct hash_si_pair) * size);
 	if (h->data == NULL) {
 		return 1;
 	}
@@ -150,7 +150,7 @@ inline static void hash_si_rehash(struct hash_si *h) {
 		const zend_string *key_zstr = old_pair->key_zstr;
 		if (key_zstr != NULL) {
 			/* We already computed the hash, avoid recomputing it. */
-			struct hash_si_pair *new_data_entry = _hash_si_find((const struct hash_si*) &newh, key_zstr, old_pair->key_hash);
+			struct hash_si_pair *new_data_entry = _hash_si_find((const struct hash_si *)&newh, key_zstr, old_pair->key_hash);
 			*new_data_entry = *old_pair;
 		}
 	}
