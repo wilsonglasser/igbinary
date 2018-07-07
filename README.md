@@ -85,7 +85,7 @@ igbinary.compact_strings=On
 ```
 
 Then, in your php code, replace `serialize` and `unserialize` function calls
-with `igbinary_serialize` and `igbinary_unserialize`.
+with [`igbinary_serialize` and `igbinary_unserialize`](./igbinary.php).
 
 Installing
 ----------
