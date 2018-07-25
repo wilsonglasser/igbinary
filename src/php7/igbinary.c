@@ -137,7 +137,6 @@ struct igbinary_serialize_data {
 	struct hash_si_ptr references; /**< Hash of already serialized potential references. (non-NULL uintptr_t => int32_t) */
 	int references_id;             /**< Number of things that the unserializer might think are references. >= length of references */
 	int string_count;              /**< Serialized string count, used for back referencing */
-	int error;                     /**< Error number. Not used. */
 	struct igbinary_memory_manager mm; /**< Memory management functions. */
 };
 
@@ -325,6 +324,10 @@ static void php_igbinary_init_globals(zend_igbinary_globals *igbinary_globals) {
 /* }}} */
 
 /* {{{ PHP_MINIT_FUNCTION */
+/**
+ * The module init function.
+ * This allocates the persistent resources of this PHP module.
+ */
 PHP_MINIT_FUNCTION(igbinary) {
 	(void)type;
 	(void)module_number;
@@ -349,6 +352,10 @@ PHP_MINIT_FUNCTION(igbinary) {
 }
 /* }}} */
 /* {{{ PHP_MSHUTDOWN_FUNCTION */
+/**
+ * The module shutdown function.
+ * This cleans up all persistent resources of this PHP module.
+ */
 PHP_MSHUTDOWN_FUNCTION(igbinary) {
 	(void)type;
 	(void)module_number;
@@ -432,6 +439,9 @@ static inline int igsd_defer_wakeup(struct igbinary_unserialize_data *igsd, zend
 /* }}} */
 
 /* {{{ igbinary_finish_wakeup }}} */
+/**
+ * After all object instances were unserialized, perform the deferred calls to __wakeup() on all of the objects implementing that method.
+ */
 static int igbinary_finish_wakeup(struct igbinary_unserialize_data *igsd) {
 	if (igsd->wakeup_count == 0) { /* nothing to do */
 		return 0;
@@ -487,6 +497,14 @@ IGBINARY_API int igbinary_serialize(uint8_t **ret, size_t *ret_len, zval *z) {
 }
 /* }}} */
 /* {{{ int igbinary_serialize_ex(uint8_t**, size_t*, zval*, igbinary_memory_manager*) */
+/**
+ * Serializes data, and writes the allocated byte buffer into ret and the buffer's length into ret_len.
+ * @param ret output parameter
+ * @param ret_len length of byte buffer ret
+ * @param z the zval (data) to serialize
+ * @param memory_manager (nullable) the memory manager to use for allocating/reallocating the buffer of serialized data. Used by extensions such as APCu
+ * @return 0 on success, 1 on failure
+ */
 IGBINARY_API int igbinary_serialize_ex(uint8_t **ret, size_t *ret_len, zval *z, struct igbinary_memory_manager *memory_manager) {
 	struct igbinary_serialize_data igsd;
 	uint8_t *tmpbuf;
@@ -535,6 +553,13 @@ IGBINARY_API int igbinary_serialize_ex(uint8_t **ret, size_t *ret_len, zval *z, 
 }
 /* }}} */
 /* {{{ int igbinary_unserialize(const uint8_t *, size_t, zval **) */
+/**
+ * Unserializes the data into z
+ * @param buf the read-only buffer with the serialized data
+ * @param buf_len the length of that buffer.
+ * @param z output parameter. Will contain the unserialized value(zval).
+ * @return 0 on success, 1 on failure
+ */
 IGBINARY_API int igbinary_unserialize(const uint8_t *buf, size_t buf_len, zval *z) {
 	struct igbinary_unserialize_data igsd;
 
@@ -564,6 +589,9 @@ IGBINARY_API int igbinary_unserialize(const uint8_t *buf, size_t buf_len, zval *
 }
 /* }}} */
 /* {{{ proto string igbinary_unserialize(mixed value) */
+/**
+ * @see igbinary.php for more detailed API documentation.
+ */
 PHP_FUNCTION(igbinary_unserialize) {
 	char *string = NULL;
 	size_t string_len;
@@ -584,6 +612,9 @@ PHP_FUNCTION(igbinary_unserialize) {
 }
 /* }}} */
 /* {{{ proto mixed igbinary_serialize(string value) */
+/**
+ * @see igbinary.php for more detailed API documentation.
+ */
 PHP_FUNCTION(igbinary_serialize) {
 	zval *z;
 	uint8_t *string;
@@ -603,6 +634,14 @@ PHP_FUNCTION(igbinary_serialize) {
 /* }}} */
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 /* {{{ Serializer encode function */
+/**
+ * This provides a serializer encode function for PHP's session module (using igbinary),
+ * if igbinary was compiled with session support.
+ *
+ * Session support has to be statically compiled into php to use igbinary,
+ * due to the lack of a cross-platform way to register a session serializer/unserializer
+ * when the session module isn't available.
+ */
 PS_SERIALIZER_ENCODE_FUNC(igbinary)
 {
 	zval *session_vars;
@@ -627,6 +666,8 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 		return ZSTR_EMPTY_ALLOC();
 	}
 
+	/** We serialize the passed in array of session_var the same way we would serialize a regular array. */
+	/** The corresponding PS_SERIALIZER_DECODE_FUNC will unserialize the array and individually add the session variables. */
 	if (igbinary_serialize_array(&igsd, session_vars, false, false) != 0) {
 		igbinary_serialize_data_deinit(&igsd, 1);
 		zend_error(E_WARNING, "igbinary_serialize: cannot serialize session variables");
@@ -642,7 +683,16 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 }
 /* }}} */
 /* {{{ Serializer decode function */
-/* This is similar to PS_SERIALIZER_DECODE_FUNC(php) from ext/session/session.c */
+/**
+ * This provides a serializer decode function for PHP's session module (using igbinary),
+ * if igbinary was compiled with session support.
+ *
+ * Session support has to be statically compiled into php to use igbinary,
+ * due to the lack of a cross-platform way to register a session serializer/unserializer
+ * when the session module isn't available.
+ *
+ * This is similar to PS_SERIALIZER_DECODE_FUNC(php) from ext/session/session.c
+ */
 PS_SERIALIZER_DECODE_FUNC(igbinary) {
 	HashTable *tmp_hash;
 	zval z;
@@ -668,6 +718,8 @@ PS_SERIALIZER_DECODE_FUNC(igbinary) {
 		return FAILURE;
 	}
 
+	/** The serializer serialized the session variables as an array. So, we unserialize that array. */
+	/** We then iterate over the array to set the individual session variables (managing the reference counts), then free the original array. */
 	if (igbinary_unserialize_zval(&igsd, &z, WANT_CLEAR)) {
 		igbinary_unserialize_data_deinit(&igsd);
 		return FAILURE;
@@ -680,6 +732,7 @@ PS_SERIALIZER_DECODE_FUNC(igbinary) {
 
 	igbinary_unserialize_data_deinit(&igsd);
 
+	/* TODO: Validate that this is of the correct data type */
 	tmp_hash = HASH_OF(&z);
 	if (tmp_hash == NULL) {
 		zval_ptr_dtor(&z);
@@ -711,7 +764,7 @@ static int APC_SERIALIZER_NAME(igbinary) ( APC_SERIALIZER_ARGS ) {
 	(void)config;
 
 	if (igbinary_serialize(buf, buf_len, (zval *)value) == 0) {
-		/* flipped semantics */
+		/* flipped semantics - We return 1 to indicate success to APCu (and 0 for failure) */
 		return 1;
 	}
 	return 0;
@@ -722,7 +775,7 @@ static int APC_UNSERIALIZER_NAME(igbinary) ( APC_UNSERIALIZER_ARGS ) {
 	(void)config;
 
 	if (igbinary_unserialize(buf, buf_len, value) == 0) {
-		/* flipped semantics - Succeeded. */
+		/* flipped semantics - We return 1 to indicate success to APCu (and 0 for failure) */
 		return 1;
 	}
 	/* Failed. free return value */
@@ -734,7 +787,13 @@ static int APC_UNSERIALIZER_NAME(igbinary) ( APC_UNSERIALIZER_ARGS ) {
 #endif
 
 /* {{{ igbinary_serialize_data_init */
-/** Inits igbinary_serialize_data. */
+/**
+ * Allocates data structures needed by igbinary_serialize_data,
+ * and sets properties of igsd to their defaults.
+ * @param igsd the struct to initialize
+ * @param scalar true if the data being serialized is a scalar
+ * @param memory_manager optional override of the memory manager
+ */
 inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *igsd, bool scalar, struct igbinary_memory_manager *memory_manager) {
 	int r = 0;
 
@@ -751,7 +810,6 @@ inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *i
 	igsd->buffer_size = 0;
 	igsd->buffer_capacity = 32;
 	igsd->string_count = 0;
-	igsd->error = 0;
 
 	igsd->buffer = (uint8_t *)igsd->mm.alloc(igsd->buffer_capacity, igsd->mm.context);
 	if (UNEXPECTED(igsd->buffer == NULL)) {
@@ -771,7 +829,7 @@ inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *i
 }
 /* }}} */
 /* {{{ igbinary_serialize_data_deinit */
-/** Deinits igbinary_serialize_data. */
+/** Deinits igbinary_serialize_data, freeing the allocated data structures. */
 inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data *igsd, int free_buffer) {
 	if (free_buffer && igsd->buffer) {
 		igsd->mm.free(igsd->buffer, igsd->mm.context);
@@ -784,13 +842,13 @@ inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data
 }
 /* }}} */
 /* {{{ igbinary_serialize_header */
-/** Serializes header. */
+/** Serializes header ("\x00\x00\x00\x02"). */
 inline static int igbinary_serialize_header(struct igbinary_serialize_data *igsd) {
 	return igbinary_serialize32(igsd, IGBINARY_FORMAT_VERSION); /* version */
 }
 /* }}} */
 /* {{{ igbinary_serialize_resize */
-/** Expands igbinary_serialize_data. */
+/** Expands igbinary_serialize_data if necessary. */
 inline static int igbinary_serialize_resize(struct igbinary_serialize_data *igsd, size_t size) {
 	if (igsd->buffer_size + size < igsd->buffer_capacity) {
 		return 0;
@@ -935,12 +993,23 @@ inline static int igbinary_serialize_double(struct igbinary_serialize_data *igsd
 }
 /* }}} */
 /* {{{ igbinary_serialize_string */
-/** Serializes string.
- * Serializes each string once, after first time uses pointers.
+/**
+ * Serializes string.
+ *
+ * When compact_strings is true,
+ * this will serialize the string as igbinary_type_string* (A length followed by a character array) the first time,
+ * and serialize subsequent references to the same string as igbinary_type_string_id*.
+ *
+ * When compact_strings is false, this will always serialize the string as a character array.
+ * compact_strings speeds up serialization, but slows down serialization and uses more space to represent the serialization.
+ *
+ * Serializes each string once.
+ * After first time uses pointers (igbinary_type_string_id*) instead of igbinary_type_string*.
  */
 inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd, zend_string *s) {
 	const size_t len = ZSTR_LEN(s);
 	if (len == 0) {
+		/* The empty string is always serialized as igbinary_serialize_string (1 byte instead of 2) */
 		return igbinary_serialize8(igsd, igbinary_type_string_empty);
 	}
 
@@ -974,7 +1043,7 @@ inline static int igbinary_serialize_string(struct igbinary_serialize_data *igsd
 }
 /* }}} */
 /* {{{ igbinary_serialize_chararray */
-/** Serializes string data. */
+/** Serializes string data as the type followed by the length followed by the raw character array. */
 inline static int igbinary_serialize_chararray(struct igbinary_serialize_data *igsd, const char *s, size_t len) {
 	if (len <= 0xff) {
 		RETURN_1_IF_NON_ZERO(igbinary_serialize8(igsd, igbinary_type_string8));
@@ -999,7 +1068,11 @@ inline static int igbinary_serialize_chararray(struct igbinary_serialize_data *i
 }
 /* }}} */
 /* {{{ igbinay_serialize_array */
-/** Serializes array or objects inner properties. */
+/**
+ * Serializes an array's or object's inner properties.
+ * If properties or keys are unexpectedly added (e.g. by __sleep() or serialize() elsewhere), this will skip serializing them.
+ * If properties or keys are unexpectedly removed, this will add igbinary_type_null as padding for the corresponding entries.
+ */
 inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd, zval *z, bool object, bool incomplete_class) {
 	/* If object=true: z is IS_OBJECT */
 	/* If object=false: z is either IS_ARRAY, or IS_REFERENCE pointing to an IS_ARRAY. */
@@ -1291,7 +1364,10 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 }
 /* }}} */
 /* {{{ igbinary_serialize_object_name */
-/** Serialize object name. */
+/**
+ * Serialize a PHP object's class name.
+ * Note that this deliberately ignores the compact_strings setting.
+ */
 inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, zend_string *class_name) {
 	struct hash_si_result result = hash_si_find_or_insert(&igsd->strings, class_name, igsd->string_count);
 	if (result.code == hash_si_code_inserted) {
@@ -1547,7 +1623,7 @@ static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z
 }
 /* }}} */
 /* {{{ igbinary_unserialize_data_init */
-/** Inits igbinary_unserialize_data_init. */
+/** Inits igbinary_unserialize_data. */
 inline static int igbinary_unserialize_data_init(struct igbinary_unserialize_data *igsd) {
 	smart_string empty_str = {0, 0, 0};
 
@@ -1560,7 +1636,6 @@ inline static int igbinary_unserialize_data_init(struct igbinary_unserialize_dat
 	igsd->strings_capacity = 4;
 	igsd->string0_buf = empty_str;
 
-	igsd->error = 0;
 	igsd->references = NULL;
 	igsd->references_count = 0;
 	igsd->references_capacity = 4;
@@ -1587,7 +1662,7 @@ inline static int igbinary_unserialize_data_init(struct igbinary_unserialize_dat
 }
 /* }}} */
 /* {{{ igbinary_unserialize_data_deinit */
-/** Deinits igbinary_unserialize_data_init. */
+/** Deinits igbinary_unserialize_data. */
 inline static void igbinary_unserialize_data_deinit(struct igbinary_unserialize_data *igsd) {
 	if (igsd->strings) {
 		size_t i;
@@ -1624,7 +1699,9 @@ inline static void igbinary_unserialize_data_deinit(struct igbinary_unserialize_
 }
 /* }}} */
 /* {{{ igbinary_unserialize_header_emit_warning */
-/* Precondition: igsd->buffer_size >= 4 */
+/**
+ * Warns about invalid byte headers
+ * Precondition: igsd->buffer_size >= 4 */
 inline static void igbinary_unserialize_header_emit_warning(struct igbinary_unserialize_data *igsd, int version) {
 	int i;
 	char buf[9], *it;
@@ -1641,6 +1718,9 @@ inline static void igbinary_unserialize_header_emit_warning(struct igbinary_unse
 		}
 	}
 
+	/* To avoid confusion, if the first 4 bytes are all printable, print those instead of the integer representation to make debugging easier. */
+	/* E.g. strings such as "a:2:" are emitted when an Array is serialized with serialize() instead of igbinary_serialize(), */
+	/* and subsequently passed to igbinary_unserialize instead of unserialize(). */
 	for (it = buf, i = 0; i < 4; i++) {
 		char c = igsd->buffer[i];
 		if (c == '"' || c == '\\') {
@@ -1924,7 +2004,7 @@ inline static zend_string *igbinary_unserialize_chararray(struct igbinary_unseri
 }
 /* }}} */
 /* {{{ igbinary_unserialize_array */
-/** Unserializes array. */
+/** Unserializes a PHP array. */
 inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, int flags) {
 	/* WANT_REF means that z will be wrapped by an IS_REFERENCE */
 	size_t n;
@@ -2094,7 +2174,7 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 }
 /* }}} */
 /* {{{ igbinary_unserialize_object_properties */
-/** Unserializes array of object properties. */
+/** Unserializes the array of object properties and adds those to the object z. */
 inline static int igbinary_unserialize_object_properties(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z) {
 	/* WANT_REF means that z will be wrapped by an IS_REFERENCE */
 	size_t n;
@@ -2111,30 +2191,30 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 
 	if (t == igbinary_type_array8) {
 		if (IGB_NEEDS_MORE_DATA(igsd, 1)) {
-			zend_error(E_WARNING, "igbinary_unserialize_array: end-of-data");
+			zend_error(E_WARNING, "igbinary_unserialize_object_properties: end-of-data");
 			return 1;
 		}
 		n = igbinary_unserialize8(igsd);
 	} else if (t == igbinary_type_array16) {
 		if (IGB_NEEDS_MORE_DATA(igsd, 2)) {
-			zend_error(E_WARNING, "igbinary_unserialize_array: end-of-data");
+			zend_error(E_WARNING, "igbinary_unserialize_object_properties: end-of-data");
 			return 1;
 		}
 		n = igbinary_unserialize16(igsd);
 	} else if (t == igbinary_type_array32) {
 		if (IGB_NEEDS_MORE_DATA(igsd, 4)) {
-			zend_error(E_WARNING, "igbinary_unserialize_array: end-of-data");
+			zend_error(E_WARNING, "igbinary_unserialize_object_properties: end-of-data");
 			return 1;
 		}
 		n = igbinary_unserialize32(igsd);
 	} else {
-		zend_error(E_WARNING, "igbinary_unserialize_array: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
+		zend_error(E_WARNING, "igbinary_unserialize_object_properties: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
 		return 1;
 	}
 
 	/* n cannot be larger than the number of minimum "objects" in the array */
 	if (IGB_NEEDS_MORE_DATA(igsd, n)) {
-		zend_error(E_WARNING, "%s: data size %zu smaller that requested array length %zu.", "igbinary_unserialize_array", (size_t)IGB_REMAINING_BYTES(igsd), (size_t)n);
+		zend_error(E_WARNING, "%s: data size %zu smaller that requested array length %zu.", "igbinary_unserialize_object_properties", (size_t)IGB_REMAINING_BYTES(igsd), (size_t)n);
 		return 1;
 	}
 
@@ -2154,7 +2234,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 		zend_string *key_str = NULL; /* NULL means use key_index */
 
 		if (IGB_NEEDS_MORE_DATA(igsd, 1)) {
-			zend_error(E_WARNING, "igbinary_unserialize_array: end-of-data");
+			zend_error(E_WARNING, "igbinary_unserialize_object_properties: end-of-data");
 			zval_dtor(z);
 			ZVAL_NULL(z);
 			return 1;
@@ -2212,7 +2292,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 			case igbinary_type_null:
 				continue;  /* Skip unserializing this element, serialized with no value. In C, this applies to loop, not switch. */
 			default:
-				zend_error(E_WARNING, "igbinary_unserialize_array: unknown key type '%02x', position %zu", key_type, (size_t)IGB_BUFFER_OFFSET(igsd));
+				zend_error(E_WARNING, "igbinary_unserialize_object_properties: unknown key type '%02x', position %zu", key_type, (size_t)IGB_BUFFER_OFFSET(igsd));
 				zval_dtor(z);
 				ZVAL_UNDEF(z);
 				return 1;
@@ -2258,7 +2338,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 }
 /* }}} */
 /* {{{ igbinary_unserialize_object_ser */
-/** Unserializes object's property array of objects implementing Serializable -interface. */
+/** Unserializes object's property array. This is used to serialize objects implementing Serializable -interface. */
 inline static int igbinary_unserialize_object_ser(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, zend_class_entry *ce) {
 	size_t n;
 	int ret;
@@ -2318,8 +2398,8 @@ inline static int igbinary_unserialize_object_ser(struct igbinary_unserialize_da
 }
 /* }}} */
 /* {{{ igbinary_unserialize_object */
-/** Unserialize object.
- * @see ext/standard/var_unserializer.c
+/** Unserialize an object.
+ * @see ext/standard/var_unserializer.c in the php-src repo. Parts of this code are based on that.
  */
 inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, int flags) {
 	zend_class_entry *ce;
@@ -2512,7 +2592,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 }
 /* }}} */
 /* {{{ igbinary_unserialize_ref */
-/** Unserializes array or object by reference. */
+/** Unserializes an array or object by reference. */
 inline static int igbinary_unserialize_ref(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, int flags) {
 	size_t n;
 
@@ -2604,7 +2684,7 @@ inline static int igbinary_unserialize_ref(struct igbinary_unserialize_data *igs
 }
 /* }}} */
 /* {{{ igbinary_unserialize_zval */
-/** Unserialize zval. */
+/** Unserialize a zval of any serializable type (zval is PHP's internal representation of a value). */
 static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zval *const z, int flags) {
 	enum igbinary_type t;
 
