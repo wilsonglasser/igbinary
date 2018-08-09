@@ -82,6 +82,7 @@ if test "$PHP_IGBINARY" != "no"; then
   PHP_INSTALL_HEADERS([ext/igbinary], [igbinary.h $subdir/igbinary.h php_igbinary.h $subdir/php_igbinary.h])
   PHP_NEW_EXTENSION(igbinary, $PHP_IGBINARY_SRC_FILES, $ext_shared,, $PHP_IGBINARY_CFLAGS)
   PHP_ADD_EXTENSION_DEP(igbinary, session, true)
+  AC_DEFINE(HAVE_IGBINARY, 1, [Have igbinary support])
   PHP_ADD_BUILD_DIR($abs_builddir/$subdir, 1)
   PHP_SUBST(IGBINARY_SHARED_LIBADD)
 fi
