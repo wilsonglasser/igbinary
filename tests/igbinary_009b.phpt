@@ -37,7 +37,7 @@ function test_cyclic2($type, $variable) {
 		printf("\$a[0] is not an array, it is %s", gettype($unserialized));
 		return;
 	}
-	// Set a key, check for the presense of the key 2 levels deeper (Should find it) and 1 level deeper (Should not find it)
+	// Set a key, check for the presence of the key 2 levels deeper (Should find it) and 1 level deeper (Should not find it)
 	$unserialized[0]['test'] = 'foo';
 	if ($unserialized[0][0][0]['test'] !== 'foo') {
 		echo "Expected the unserialized array to be cyclic\n";
