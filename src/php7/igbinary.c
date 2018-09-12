@@ -1162,7 +1162,7 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *igsd, zval *z, bool object) {
 	size_t t;
 	zend_uintptr_t key;  /* The address of the pointer to the zend_refcounted struct or other struct */
-	static int INVALID_KEY;  /* Not used, but we take the pointer of this knowing other zvals wont share it*/
+	static int INVALID_KEY;  /* Not used, but we take the pointer of this knowing other zvals won't share it*/
 
 	/* Similar to php_var_serialize_intern's first part, as well as php_add_var_hash, for printing R: (reference) or r:(object) */
 	/* However, it differs from the built in serialize() in that references to objects are preserved when serializing and unserializing? (TODO check, test for backwards compatibility) */
