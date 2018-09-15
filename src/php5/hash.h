@@ -58,7 +58,7 @@ struct hash_si {
  * @param size initial size of the hash array.
  * @return 0 on success, 1 else.
  */
-int hash_si_init(struct hash_si *h, size_t size);
+int hash_si_init(struct hash_si *h, uint32_t size);
 
 /** Frees hash_si structure.
  * Doesn't call free(h).
