@@ -92,7 +92,7 @@ Installing
 
 ### Linux
 
-If PHP was installed through your your package manager,
+If PHP was installed through your package manager,
 the package manager may also contain prebuilt packages for `igbinary`
 (with a package name similar to php-igbinary)
 
