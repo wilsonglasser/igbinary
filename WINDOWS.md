@@ -30,8 +30,6 @@ Installing Visual Studio
 
    At the time of writing, that was [Visual Studio Community Edition 2015](https://visualstudio.microsoft.com/vs/older-downloads/) for PHP7.0 - 7.2,
    and [Visual Studio Community Edition 2017](https://www.visualstudio.com/products/visual-studio-community-vs) for PHP 7.2+
-
-   Visual Studio 2015 **is not able to compile php 5**. Install Visual Studio 2012 if building php 5.5 or 5.6. Install Visual Studio 2008 if installing php 5.4.
 2. Install Visual Studio 2015. (Use custom installation, make sure that all C++ features are enabled)
 
 Downloading PHP

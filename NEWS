@@ -1,3 +1,9 @@
+3.0.0 2018-??-??
+=======
+
+* This release line drops support for PHP5.
+* Drop support for APC (APC was only available for PHP5 - It is the predecessor of APCu)
+
 2.0.8dev 2018-??-??
 =======
 

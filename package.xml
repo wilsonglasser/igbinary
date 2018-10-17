@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2018-06-27</date>
+ <date>2018-12-29</date>
  <time>16:00:00</time>
  <version>
-  <release>2.0.8dev</release>
+  <release>3.0.0dev</release>
   <api>1.1.2</api>
  </version>
  <stability>
@@ -43,7 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix compiler warnings about format strings, for errors that should not occur during normal igbinary usage.
+* Drop support for PHP 5.
  </notes>
  <contents>
   <dir name="/">
@@ -51,16 +51,6 @@
    <file name="config.w32" role="src" />
    <file name="igbinary.h" role="src" />
    <file name="php_igbinary.h" role="src" />
-   <file name="src/php5/hash.h" role="src" />
-   <file name="src/php5/hash_ptr.h" role="src" />
-   <file name="src/php5/hash_si.c" role="src" />
-   <file name="src/php5/hash_si_ptr.c" role="src" />
-   <file name="src/php5/igbinary.c" role="src" />
-   <file name="src/php5/igbinary.h" role="src" />
-   <file name="src/php5/igbinary_macros.h" role="src" />
-   <file name="src/php5/php_igbinary.h" role="src" />
-   <file name="src/php5/ig_win32.h" role="src" />
-   <file name="src/php5/apc_serializer.h" role="src" />
    <file name="src/php7/hash.h" role="src" />
    <file name="src/php7/hash_ptr.h" role="src" />
    <file name="src/php7/hash_si.c" role="src" />
@@ -168,7 +158,7 @@
  <dependencies>
   <required>
    <php>
-    <min>5.2.0</min>
+    <min>7.0.0</min>
    </php>
    <pearinstaller>
     <min>1.4.0b1</min>
@@ -178,6 +168,22 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2018-12-29</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.0.0dev</release>
+    <api>1.1.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Drop support for PHP 5
+   </notes>
+  </release>
   <release>
    <date>2018-06-27</date>
    <time>16:00:00</time>
