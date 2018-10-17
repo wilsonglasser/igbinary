@@ -35,11 +35,11 @@ if test "$PHP_IGBINARY" != "no"; then
   AC_MSG_ERROR([PHP 5 is not supported by igbinary 3. Use igbinary 2 instead.])
   ])
 
-  AC_MSG_CHECKING([for APC/APCU includes])
+  AC_MSG_CHECKING([for APCu includes])
   if test -f "$phpincludedir/ext/apcu/apc_serializer.h"; then
     apc_inc_path="$phpincludedir"
-    AC_MSG_RESULT([APCU in $apc_inc_path])
-    AC_DEFINE(HAVE_APCU_SUPPORT,1,[Whether to enable apcu support])
+    AC_MSG_RESULT([APCu in $apc_inc_path])
+    AC_DEFINE(HAVE_APCU_SUPPORT,1,[Whether to enable APCu support])
   else
     AC_MSG_RESULT([not found])
   fi

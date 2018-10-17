@@ -27,7 +27,6 @@
 
 #include "ext/standard/php_incomplete_class.h"
 
-/* Note: there are no checks for APC (project from which APCU was forked) */
 #if defined(HAVE_APCU_SUPPORT)
 # include "ext/apcu/apc_serializer.h"
 #endif /* HAVE_APCU_SUPPORT */
@@ -380,9 +379,9 @@ PHP_MINFO_FUNCTION(igbinary) {
 	php_info_print_table_row(2, "igbinary support", "enabled");
 	php_info_print_table_row(2, "igbinary version", PHP_IGBINARY_VERSION);
 #if defined(HAVE_APCU_SUPPORT)
-	php_info_print_table_row(2, "igbinary APCU serializer ABI", APC_SERIALIZER_ABI);
+	php_info_print_table_row(2, "igbinary APCu serializer ABI", APC_SERIALIZER_ABI);
 #else
-	php_info_print_table_row(2, "igbinary APC serializer ABI", "no");
+	php_info_print_table_row(2, "igbinary APCu serializer ABI", "no");
 #endif
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 	php_info_print_table_row(2, "igbinary session support", "yes");

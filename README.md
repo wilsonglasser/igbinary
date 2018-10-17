@@ -78,8 +78,6 @@ igbinary.compact_strings=On
 
 ; If uncommented, use igbinary as the serializer of APCu
 ; (For PHP 7, APCu 5.1.10 or newer is strongly recommended)
-; For older PHP versions, APC cache is also supported
-; (must be version 3.1.7 or newer)
 ;apc.serializer=igbinary
 ```
 
