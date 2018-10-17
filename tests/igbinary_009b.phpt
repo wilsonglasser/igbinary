@@ -8,6 +8,8 @@ if(!extension_loaded('igbinary')) {
 if(PHP_MAJOR_VERSION < 7) {
 	echo "skip broken in php 5, and an existing bug";
 }
+--INI--
+pcre.jit=0
 --FILE--
 <?php
 error_reporting(E_ALL|E_STRICT);
