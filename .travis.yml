@@ -51,6 +51,10 @@ matrix:
     env: CC=clang   CFLAGS="-g -O0"
   - php: 7.3
     env: CC=gcc-4.8 CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+    # For some reason, the below build job results in code that causes leak checks to fail,
+    # even in tests that don't invoke igbinary (e.g. `LEAK Check for igbinary presence [tests/igbinary_001.phpt]`)
+  - php: 7.3
+    env: CC=gcc-4.8 CFLAGS=""
   - php: master
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
   - php: master
