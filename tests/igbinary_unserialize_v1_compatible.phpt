@@ -1,11 +1,7 @@
 --TEST--
 Unserialize backwards compatible with v1.
---SKIPIF--
-<?php
-// NOTE: If I run igbinary_unserialize() locally in PHP 7.3 without the ob_start()/ob_get_clean(),
-// this doesn't have valgrind errors. But with the ob_start()/ob_get_clean(), it does (both locally and in Travis)
-if (PHP_VERSION_ID >= 70300) { echo "skip seeing unrelated failure in Travis with Valgrind due to ob_start()/ob_get_clean()\n"; }
-?>
+--INI--
+pcre.jit=0
 --FILE--
 <?php
 $data = array(
