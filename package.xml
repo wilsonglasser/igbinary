@@ -31,7 +31,7 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2018-12-29</date>
+ <date>2019-01-03</date>
  <time>16:00:00</time>
  <version>
   <release>3.0.0dev</release>
@@ -104,17 +104,14 @@
     <file name="igbinary_029.phpt" role="test" />
     <file name="igbinary_030_php72.phpt" role="test" />
     <file name="igbinary_030_php7.phpt" role="test" />
-    <file name="igbinary_030.phpt" role="test" />
     <file name="igbinary_031.phpt" role="test" />
     <file name="igbinary_032.phpt" role="test" />
     <file name="igbinary_033.phpt" role="test" />
     <file name="igbinary_034.phpt" role="test" />
     <file name="igbinary_040.phpt" role="test" />
     <file name="igbinary_041.phpt" role="test" />
-    <file name="igbinary_042.phpt" role="test" />
     <file name="igbinary_043.phpt" role="test" />
     <file name="igbinary_044.phpt" role="test" />
-    <file name="igbinary_045.phpt" role="test" />
     <file name="igbinary_045b.phpt" role="test" />
     <file name="igbinary_045c.phpt" role="test" />
     <file name="igbinary_046.phpt" role="test" />
@@ -139,12 +136,10 @@
     <file name="igbinary_060.phpt" role="test" />
     <file name="igbinary_061.phpt" role="test" />
     <file name="igbinary_062.phpt" role="test" />
-    <file name="igbinary_063.phpt" role="test" />
     <file name="igbinary_063_php72.phpt" role="test" />
     <file name="igbinary_063_php7.phpt" role="test" />
     <file name="igbinary_064.phpt" role="test" />
     <file name="igbinary_065.phpt" role="test" />
-    <file name="igbinary_065_php5.phpt" role="test" />
     <file name="igbinary_066.phpt" role="test" />
     <file name="igbinary_067.phpt" role="test" />
     <file name="igbinary_068.phpt" role="test" />
@@ -169,7 +164,7 @@
  <extsrcrelease />
  <changelog>
   <release>
-   <date>2018-12-29</date>
+   <date>2019-01-03</date>
    <time>16:00:00</time>
    <version>
     <release>3.0.0dev</release>
