@@ -19,7 +19,7 @@ $f = &$ig[2];
 $f = 'V';
 var_dump($ig);
 // Note: While the php7 unserializer consistently makes a distinction between refs to an object and non-refs,
-// the php5 serializer does not yet.
+// the php5 serializer does not.
 --EXPECTF--
 array(4) {
   [0]=>
