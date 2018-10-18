@@ -32,7 +32,7 @@ if test "$PHP_IGBINARY" != "no"; then
   PHP_IGBINARY_SRC_FILES="src/php7/igbinary.c src/php7/hash_si.c src/php7/hash_si_ptr.c"
   AC_MSG_RESULT([PHP 7])
   ],[
-  AC_MSG_ERROR([PHP 5 is not supported by igbinary 3. Use igbinary 2 instead.])
+  AC_MSG_ERROR([PHP 5 is not supported by igbinary 3. Use igbinary 2 instead for PHP5 support.])
   ])
 
   AC_MSG_CHECKING([for APCu includes])
