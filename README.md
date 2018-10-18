@@ -77,7 +77,7 @@ session.serialize_handler=igbinary
 igbinary.compact_strings=On
 
 ; If uncommented, use igbinary as the serializer of APCu
-; (For PHP 7, APCu 5.1.10 or newer is strongly recommended)
+; (APCu 5.1.10 or newer is strongly recommended)
 ;apc.serializer=igbinary
 ```
 

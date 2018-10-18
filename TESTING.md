@@ -17,8 +17,8 @@ make test TESTS="-m tests/igbinary_0mytest.phpt"
 This is only necessary if you've touched the igbinary memory management code or the code for interacting with APCu,
 or are debugging an issue involving both APCu with the igbinary serializer.
 
-Note that APCu 5.1.10 or newer is strongly recommended for php 7,
-there were [known bugs in APCu](https://github.com/krakjoe/apcu/issues/260) prior to that.
+Note that APCu 5.1.10 or newer is strongly recommended,
+since there were [known bugs in APCu](https://github.com/krakjoe/apcu/issues/260) prior to that.
 
 Instructions
 
