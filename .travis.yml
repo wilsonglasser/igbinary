@@ -83,3 +83,4 @@ script:
 branches:
   only:
     - master
+    - v3
