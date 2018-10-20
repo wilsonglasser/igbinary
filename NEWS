@@ -1,7 +1,9 @@
-2.0.8dev 2018-??-??
+2.0.8 2018-10-20
 =======
 
 * Be more aggressive about deduplication when generating serialization of arrays in php 7.0+.
+* Define HAVE_IGBINARY on Unix/Linux. (previously defined only on Windows)
+* Update formatting/wording of documentation.
 
 2.0.7 2018-06-27
 =======

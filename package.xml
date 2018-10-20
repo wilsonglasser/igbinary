@@ -31,19 +31,21 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2018-06-27</date>
+ <date>2018-10-20</date>
  <time>16:00:00</time>
  <version>
-  <release>2.0.8dev</release>
+  <release>2.0.8</release>
   <api>1.1.2</api>
  </version>
  <stability>
-  <release>devel</release>
-  <api>devel</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix compiler warnings about format strings, for errors that should not occur during normal igbinary usage.
+* Be more aggressive about deduplication when generating serialization of arrays in php 7.0+.
+* Define HAVE_IGBINARY on Unix/Linux. (previously defined only on Windows)
+* Update formatting/wording of documentation.
  </notes>
  <contents>
   <dir name="/">
@@ -178,6 +180,24 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2018-10-20</date>
+   <time>16:00:00</time>
+   <version>
+    <release>2.0.8</release>
+    <api>1.1.2</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Be more aggressive about deduplication when generating serialization of arrays in php 7.0+.
+* Define HAVE_IGBINARY on Unix/Linux. (previously defined only on Windows)
+* Update formatting/wording of documentation.
+   </notes>
+  </release>
   <release>
    <date>2018-06-27</date>
    <time>16:00:00</time>
