@@ -1815,7 +1815,7 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 
 	// n cannot be larger than the number of minimum "objects" in the array
 	if (n > igsd->buffer_size - igsd->buffer_offset) {
-		zend_error(E_WARNING, "%s: data size %zu smaller that requested array length %zu.", "igbinary_unserialize_array", igsd->buffer_size - igsd->buffer_offset, n);
+		zend_error(E_WARNING, "%s: data size %zu smaller that requested array length %zu.", "igbinary_unserialize_array", (size_t)(igsd->buffer_size - igsd->buffer_offset), (size_t)n);
 		return 1;
 	}
 
