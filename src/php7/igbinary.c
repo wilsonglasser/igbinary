@@ -27,6 +27,10 @@
 
 #include "ext/standard/php_incomplete_class.h"
 
+#if PHP_VERSION_ID < 70400
+#define zend_get_properties_for(struc, purpose) Z_OBJPROP_P((struc))
+#endif
+
 #if defined(HAVE_APCU_SUPPORT)
 # include "ext/apcu/apc_serializer.h"
 #endif /* HAVE_APCU_SUPPORT */
@@ -1088,7 +1092,7 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 	ZVAL_DEREF(z);
 
 	/* hash */
-	h = object ? Z_OBJPROP_P(z) : HASH_OF(z);
+	h = object ? zend_get_properties_for(z, ZEND_PROP_PURPOSE_SERIALIZE) : HASH_OF(z);
 
 	/* hash size */
 	n = h ? zend_hash_num_elements(h) : 0;
@@ -1263,7 +1267,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 		return 0;
 	}
 
-	object_properties = Z_OBJPROP_P(z);
+	object_properties = zend_get_properties_for(z, ZEND_PROP_PURPOSE_SERIALIZE);
 
 	ZEND_HASH_FOREACH_STR_KEY_VAL(h, key, d) {
 		/* skip magic member in incomplete classes */
