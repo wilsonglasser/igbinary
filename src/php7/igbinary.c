@@ -582,6 +582,13 @@ IGBINARY_API int igbinary_unserialize(const uint8_t *buf, size_t buf_len, zval *
 		return 1;
 	}
 
+	if (igsd.buffer_ptr < igsd.buffer_end) {
+		// https://github.com/igbinary/igbinary/issues/64
+		zend_error(E_WARNING, "igbinary_unserialize: received more data to unserialize than expected");
+		igbinary_unserialize_data_deinit(&igsd);
+		return 1;
+	}
+
 	if (igbinary_finish_wakeup(&igsd)) {
 		igbinary_unserialize_data_deinit(&igsd);
 		return 1;
