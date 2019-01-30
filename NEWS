@@ -1,8 +1,10 @@
-3.0.0dev 2018-??-??
+3.0.0dev 2019-??-??
 =======
 
 * This release line drops support for PHP5.
 * Drop support for APC (APC was only available for PHP5 - It is the predecessor of APCu)
+* Emit a warning and return null if igbinary_unserialize() is passed more data to unserialize than expected.
+* Fix compilation against PHP 7.4-dev. Igbinary does NOT yet properly serialize/unserialize all classes with PHP 7.4-dev's typed properties.
 
 2.0.8 2018-10-20
 =======
