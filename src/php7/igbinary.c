@@ -790,7 +790,7 @@ static int APC_UNSERIALIZER_NAME(igbinary) ( APC_UNSERIALIZER_ARGS ) {
 	}
 	/* Failed. free return value */
 	zval_ptr_dtor(value);
-	ZVAL_NULL(value); /* and replace the incomplete value with null just in case APCU uses it in the future */
+	ZVAL_NULL(value); /* and replace the incomplete value with null just in case APCu uses it in the future */
 	return 0;
 }
 /* }}} */
