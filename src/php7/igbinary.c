@@ -27,7 +27,10 @@
 
 #include "ext/standard/php_incomplete_class.h"
 
-/* Note: there are no checks for APC (project from which APCU was forked) */
+#if PHP_VERSION_ID < 70400
+#define zend_get_properties_for(struc, purpose) Z_OBJPROP_P((struc))
+#endif
+
 #if defined(HAVE_APCU_SUPPORT)
 # include "ext/apcu/apc_serializer.h"
 #endif /* HAVE_APCU_SUPPORT */
@@ -380,9 +383,9 @@ PHP_MINFO_FUNCTION(igbinary) {
 	php_info_print_table_row(2, "igbinary support", "enabled");
 	php_info_print_table_row(2, "igbinary version", PHP_IGBINARY_VERSION);
 #if defined(HAVE_APCU_SUPPORT)
-	php_info_print_table_row(2, "igbinary APCU serializer ABI", APC_SERIALIZER_ABI);
+	php_info_print_table_row(2, "igbinary APCu serializer ABI", APC_SERIALIZER_ABI);
 #else
-	php_info_print_table_row(2, "igbinary APC serializer ABI", "no");
+	php_info_print_table_row(2, "igbinary APCu serializer ABI", "no");
 #endif
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 	php_info_print_table_row(2, "igbinary session support", "yes");
@@ -575,6 +578,13 @@ IGBINARY_API int igbinary_unserialize(const uint8_t *buf, size_t buf_len, zval *
 	}
 
 	if (igbinary_unserialize_zval(&igsd, z, WANT_CLEAR)) {
+		igbinary_unserialize_data_deinit(&igsd);
+		return 1;
+	}
+
+	if (igsd.buffer_ptr < igsd.buffer_end) {
+		// https://github.com/igbinary/igbinary/issues/64
+		zend_error(E_WARNING, "igbinary_unserialize: received more data to unserialize than expected");
 		igbinary_unserialize_data_deinit(&igsd);
 		return 1;
 	}
@@ -1089,7 +1099,7 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 	ZVAL_DEREF(z);
 
 	/* hash */
-	h = object ? Z_OBJPROP_P(z) : HASH_OF(z);
+	h = object ? zend_get_properties_for(z, ZEND_PROP_PURPOSE_SERIALIZE) : HASH_OF(z);
 
 	/* hash size */
 	n = h ? zend_hash_num_elements(h) : 0;
@@ -1264,7 +1274,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 		return 0;
 	}
 
-	object_properties = Z_OBJPROP_P(z);
+	object_properties = zend_get_properties_for(z, ZEND_PROP_PURPOSE_SERIALIZE);
 
 	ZEND_HASH_FOREACH_STR_KEY_VAL(h, key, d) {
 		/* skip magic member in incomplete classes */
