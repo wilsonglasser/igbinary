@@ -31,14 +31,14 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-01-29</date>
+ <date>2019-02-09</date>
  <time>16:00:00</time>
  <version>
-  <release>3.0.0dev</release>
+  <release>3.0.0a1</release>
   <api>1.2.0</api>
  </version>
  <stability>
-  <release>stable</release>
+  <release>alpha</release>
   <api>stable</api>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
@@ -47,6 +47,7 @@
 * Drop support for APC (APC was only available for PHP5 - It is the predecessor of APCu)
 * Emit a warning and return null if igbinary_unserialize() is passed more data to unserialize than expected.
 * Fix compilation against PHP 7.4-dev. Igbinary does NOT yet properly serialize/unserialize all classes with PHP 7.4-dev's typed properties.
+* The serialization format is exactly the same as igbinary 2.x
  </notes>
  <contents>
   <dir name="/">
@@ -167,14 +168,14 @@
  <extsrcrelease />
  <changelog>
   <release>
-   <date>2019-01-29</date>
+   <date>2019-02-09</date>
    <time>16:00:00</time>
    <version>
-    <release>3.0.0dev</release>
+    <release>3.0.0a1</release>
     <api>1.2.0</api>
    </version>
    <stability>
-    <release>stable</release>
+    <release>alpha</release>
     <api>stable</api>
    </stability>
    <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
@@ -183,6 +184,7 @@
 * Drop support for APC (APC was only available for PHP5 - It is the predecessor of APCu)
 * Emit a warning and return null if igbinary_unserialize() is passed more data to unserialize than expected.
 * Fix compilation against PHP 7.4-dev. Igbinary does NOT yet properly serialize/unserialize all classes with PHP 7.4-dev's typed properties.
+* The serialization format is exactly the same as igbinary 2.x
    </notes>
   </release>
   <release>
