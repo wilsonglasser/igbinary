@@ -2,7 +2,7 @@
 
 # Required env variables:
 #  PHP_CONFIGURE_ARGS
-#  PHP_CUSTOM_VERSION (E.g. 7.1.7)
+#  PHP_CUSTOM_VERSION (E.g. 7.1.26)
 #  PHP_INSTALL_DIR (path to installation directory)
 
 # optional env vars:
