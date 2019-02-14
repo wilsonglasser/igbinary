@@ -1,3 +1,9 @@
+3.0.0a2 2019-02-13
+=======
+
+* Don't use empty string for serializing empty $_SESSION array, it breaks some save handlers. (Issue #231)
+  Continue treating the empty string as the empty $_SESSION array when unserializing.
+
 3.0.0a1 2019-02-08
 =======
 

@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-02-09</date>
+ <date>2019-02-13</date>
  <time>16:00:00</time>
  <version>
-  <release>3.0.0a1</release>
+  <release>3.0.0a2</release>
   <api>1.2.0</api>
  </version>
  <stability>
@@ -43,11 +43,8 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Drop support for PHP 5.
-* Drop support for APC (APC was only available for PHP5 - It is the predecessor of APCu)
-* Emit a warning and return null if igbinary_unserialize() is passed more data to unserialize than expected.
-* Fix compilation against PHP 7.4-dev. Igbinary does NOT yet properly serialize/unserialize all classes with PHP 7.4-dev's typed properties.
-* The serialization format is exactly the same as igbinary 2.x
+* Don't use empty string for serializing empty $_SESSION array, it breaks some save handlers. (Issue #231)
+  Continue treating the empty string as the empty $_SESSION array when unserializing.
  </notes>
  <contents>
   <dir name="/">
@@ -167,6 +164,23 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2019-02-13</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.0.0a2</release>
+    <api>1.2.0</api>
+   </version>
+   <stability>
+    <release>alpha</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Don't use empty string for serializing empty $_SESSION array, it breaks some save handlers. (Issue #231)
+Continue treating the empty string as the empty $_SESSION array when unserializing.
+   </notes>
+  </release>
   <release>
    <date>2019-02-09</date>
    <time>16:00:00</time>
