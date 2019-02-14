@@ -662,9 +662,6 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 	if (Z_ISREF_P(session_vars)) {
 		session_vars = Z_REFVAL_P(session_vars);
 	}
-	if (Z_TYPE_P(session_vars) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(session_vars)) == 0) {
-		return ZSTR_EMPTY_ALLOC();
-	}
 	if (igbinary_serialize_data_init(&igsd, false, NULL)) {
 		zend_error(E_WARNING, "igbinary_serialize: cannot init igsd");
 		return ZSTR_EMPTY_ALLOC();
@@ -676,7 +673,8 @@ PS_SERIALIZER_ENCODE_FUNC(igbinary)
 		return ZSTR_EMPTY_ALLOC();
 	}
 
-	/** We serialize the passed in array of session_var the same way we would serialize a regular array. */
+	/** We serialize the passed in array of session_var (including the empty array, for #231) */
+	/** the same way we would serialize a regular array. */
 	/** The corresponding PS_SERIALIZER_DECODE_FUNC will unserialize the array and individually add the session variables. */
 	if (igbinary_serialize_array(&igsd, session_vars, false, false) != 0) {
 		igbinary_serialize_data_deinit(&igsd, 1);
