@@ -31,20 +31,19 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-02-13</date>
+ <date>2019-02-17</date>
  <time>16:00:00</time>
  <version>
-  <release>3.0.0a2</release>
+  <release>3.0.0</release>
   <api>1.2.0</api>
  </version>
  <stability>
-  <release>alpha</release>
+  <release>stable</release>
   <api>stable</api>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Don't use empty string for serializing empty $_SESSION array, it breaks some save handlers. (Issue #231)
-  Continue treating the empty string as the empty $_SESSION array when unserializing.
+* Identical to 3.0.0a2
  </notes>
  <contents>
   <dir name="/">
@@ -165,6 +164,22 @@
  <extsrcrelease />
  <changelog>
   <release>
+   <date>2019-02-17</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.0.0</release>
+    <api>1.2.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+  * Identical to 3.0.0a2
+   </notes>
+  </release>
+  <release>
    <date>2019-02-13</date>
    <time>16:00:00</time>
    <version>
@@ -178,7 +193,7 @@
    <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
    <notes>
 * Don't use empty string for serializing empty $_SESSION array, it breaks some save handlers. (Issue #231)
-Continue treating the empty string as the empty $_SESSION array when unserializing.
+  Continue treating the empty string as the empty $_SESSION array when unserializing.
    </notes>
   </release>
   <release>
