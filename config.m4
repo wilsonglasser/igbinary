@@ -22,22 +22,27 @@ if test "$PHP_IGBINARY" != "no"; then
 
   AC_MSG_CHECKING(PHP version)
 
+  PHP_IGBINARY_SRC_FILES="src/php7/igbinary.c src/php7/hash_si.c src/php7/hash_si_ptr.c"
+  if test -n "$phpincludedir" -a -d "$phpincludedir"; then
+    IGBINARY_PHPINCLUDEDIR=$phpincludedir
+  else
+    IGBINARY_PHPINCLUDEDIR=$abs_srcdir
+  fi
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-  #include <$phpincludedir/main/php_version.h>
+  #include <$IGBINARY_PHPINCLUDEDIR/main/php_version.h>
   ]], [[
 #if PHP_MAJOR_VERSION < 7
 #error PHP < 7
 #endif
   ]])],[
-  PHP_IGBINARY_SRC_FILES="src/php7/igbinary.c src/php7/hash_si.c src/php7/hash_si_ptr.c"
   AC_MSG_RESULT([PHP 7])
   ],[
   AC_MSG_ERROR([PHP 5 is not supported by igbinary 3. Use igbinary 2 instead for PHP5 support.])
   ])
 
   AC_MSG_CHECKING([for APCu includes])
-  if test -f "$phpincludedir/ext/apcu/apc_serializer.h"; then
-    apc_inc_path="$phpincludedir"
+  if test -f "$IGBINARY_PHPINCLUDEDIR/ext/apcu/apc_serializer.h"; then
+    apc_inc_path="$IGBINARY_PHPINCLUDEDIR"
     AC_MSG_RESULT([APCu in $apc_inc_path])
     AC_DEFINE(HAVE_APCU_SUPPORT,1,[Whether to enable APCu support])
   else
