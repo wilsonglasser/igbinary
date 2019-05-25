@@ -1,3 +1,9 @@
+3.1.0b1 2019-12-08
+=======
+
+* Support php 7.4's __serialize/__unserialize the same way serialize()/unserialize() does.
+  This deliberately only supports __serialize/__unserialize in php 7.4, to making switching to/from serialize()/unserialize() as straightforward as possible.
+
 3.0.1 2019-03-20
 =======
 
