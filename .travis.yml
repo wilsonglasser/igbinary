@@ -2,11 +2,14 @@ language: php
 
 php:
   - master
-  - 7.4snapshot
+  - 7.4
   - 7.3
   - 7.2
   - 7.1
   - 7.0
+
+# TODO: Figure out how to fix asm/errno.h: No such file or directory in travis 32-bit builds on xenial.
+dist: trusty
 
 matrix:
   allow_failures:
