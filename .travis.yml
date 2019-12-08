@@ -13,6 +13,9 @@ dist: xenial
 matrix:
   allow_failures:
   - php: master
+  # Allow valgrind+7.4 to fail due to false positive leaks reported by valgrind in zend_string_equals (implementation uses custom assembly).
+  - php: 7.4snapshot
+    env: CC=gcc CFLAGS=""
   exclude:
   - php: 7.0
     env: CC=clang   CFLAGS="-g -O0"
