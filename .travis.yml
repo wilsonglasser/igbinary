@@ -2,30 +2,30 @@ language: php
 
 php:
   - master
-  - 7.4
+  - 7.4snapshot
   - 7.3
   - 7.2
   - 7.1
   - 7.0
 
 # TODO: Figure out how to fix asm/errno.h: No such file or directory in travis 32-bit builds on xenial.
-dist: trusty
+# bionic is too old to build php 7.0
+dist: xenial
 
 matrix:
   allow_failures:
   - php: master
-  - php: 7.4snapshot
   exclude:
   - php: 7.0
     env: CC=clang   CFLAGS="-g -O0"
   - php: 7.1
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
   - php: 7.1
-    env: CC=gcc-4.8 CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+    env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
   - php: 7.2
     env: CC=clang   CFLAGS="-g -O0"
   - php: 7.2
-    env: CC=gcc-4.8 CXX=g++-4.8 USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
     # Note: The version of clang bundled with Ubuntu Trusty can't compile PHP 7.3
     # ("'asm goto' constructs are not supported yet")
     # and PHP 7.3 doesn't yet work in Ubuntu Xenial (https://github.com/travis-ci/travis-ci/issues/9717#issuecomment-429564626).
@@ -35,28 +35,24 @@ matrix:
   - php: 7.3
     env: CC=clang   CFLAGS="-g -O0"
   - php: 7.3
-    env: CC=gcc-4.8 CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+    env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
     # For some reason, the below build job results in code that causes leak checks to fail,
     # even in tests that don't invoke igbinary (e.g. `LEAK Check for igbinary presence [tests/igbinary_001.phpt]`)
   - php: 7.3
-    env: CC=gcc-4.8 CFLAGS=""
-  # Exclude clang, the version bundled with trusty is too old to support inline assembly used by php-src 7.4+?
+    env: CC=gcc CFLAGS=""
+  # Exclude clang: since php was compiled with gcc, HAVE_ASM_GOTO is defined, but clang doesn't support asm goto.
   - php: 7.4snapshot
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
   - php: 7.4snapshot
     env: CC=clang   CFLAGS="-g -O0"
-  - php: 7.4snapshot
-    env: CC=gcc-4.8 CFLAGS=""
-  - php: 7.4snapshot
-    env: CC=gcc-4.8 CXX=g++-4.8 USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
   - php: master
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
   - php: master
     env: CC=clang   CFLAGS="-g -O0"
   - php: master
-    env: CC=gcc-4.8 CFLAGS=""
+    env: CC=gcc CFLAGS=""
   - php: master
-    env: CC=gcc-4.8 CXX=g++-4.8 USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
 
 cache:
   directories:
@@ -65,15 +61,16 @@ cache:
 env:
   - CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
   - CC=clang   CFLAGS="-g -O0"
-  - CC=gcc-4.8 CFLAGS=""
-  - CC=gcc-4.8 CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
-  - CC=gcc-4.8 CXX=g++-4.8 USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
+  - CC=gcc CFLAGS=""
+  - CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+  - CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
 
 install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq $CC
   # For 32-bit installations: Install multilib so it can be compiled, as well libc6-dbg:i386 so that valgrind will work.
-  - if [ "x$USE_32BIT" != "x" ]; then sudo apt-get install -y $CXX g++-4.8-multilib libc6-dev-i386 libc6-dbg:i386; export CC="$PWD/ci/gcc-32.sh"; export CXX="$PWD/ci/g++-32.sh"; $CC --version;  fi
+  - if [ "x$USE_32BIT" != "x" ]; then sudo apt-get install -y $CXX g++-multilib libc6-dev-i386 libc6-dbg:i386; export CC="$PWD/ci/gcc-32.sh"; export CXX="$PWD/ci/g++-32.sh"; $CC --version; if [ ! -d /usr/include/asm ]; then ln -nsf /usr/include/asm-generic /usr/include/asm; fi; fi
+  - ls /usr/include -la; find /usr/include -iname errno.h
   # If making a 32-bit build: Automatically determine and download the latest patch of each minor version we support.
   - if [ "x$SKIP_VALGRIND" = "x" ]; then sudo apt-get install -qq valgrind; valgrind --version; fi
   - if [ "x$PHP_CUSTOM" != "x" ]; then export PHP_CUSTOM_VERSION=$(./ci/get_global_php_version.sh); echo "Version is $PHP_CUSTOM_VERSION"; ./ci/install_php_custom.sh || exit 1; export PATH="$(./ci/generate_php_install_dir.sh)/bin:$PATH"; export PHPRC=$PWD/ci/; else ./ci/wipe_travis_cache.sh; fi

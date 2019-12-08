@@ -31,19 +31,20 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-03-20</date>
+ <date>2019-12-08</date>
  <time>16:00:00</time>
  <version>
-  <release>3.0.1</release>
-  <api>1.2.0</api>
+  <release>3.1.0b1</release>
+  <api>1.2.1</api>
  </version>
  <stability>
-  <release>stable</release>
-  <api>stable</api>
+  <release>beta</release>
+  <api>beta</api>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix version check when statically building igbinary inside of the php-src folder.
+* Support php 7.4's __serialize/__unserialize the same way serialize()/unserialize() does.
+  This deliberately only supports __serialize/__unserialize in php 7.4, to making switching to/from serialize()/unserialize() as straightforward as possible.
  </notes>
  <contents>
   <dir name="/">
@@ -69,6 +70,16 @@
    <file name="README.md" role="doc" />
    <file name="NEWS" role="doc" />
    <dir name="tests">
+    <file name="__serialize_001.phpt" role="test" />
+    <file name="__serialize_002.phpt" role="test" />
+    <file name="__serialize_003.phpt" role="test" />
+    <file name="__serialize_004.phpt" role="test" />
+    <file name="__serialize_005.phpt" role="test" />
+    <file name="__serialize_006.phpt" role="test" />
+    <file name="__serialize_007.phpt" role="test" />
+    <file name="__serialize_008.phpt" role="test" />
+    <file name="__serialize_009.phpt" role="test" />
+    <file name="__serialize_010.phpt" role="test" />
     <file name="igbinary_001.phpt" role="test" />
     <file name="igbinary_002.phpt" role="test" />
     <file name="igbinary_003.phpt" role="test" />
@@ -102,8 +113,8 @@
     <file name="igbinary_027.phpt" role="test" />
     <file name="igbinary_028.phpt" role="test" />
     <file name="igbinary_029.phpt" role="test" />
-    <file name="igbinary_030_php72.phpt" role="test" />
     <file name="igbinary_030_php7.phpt" role="test" />
+    <file name="igbinary_030_php72.phpt" role="test" />
     <file name="igbinary_031.phpt" role="test" />
     <file name="igbinary_032.phpt" role="test" />
     <file name="igbinary_033.phpt" role="test" />
@@ -136,14 +147,15 @@
     <file name="igbinary_060.phpt" role="test" />
     <file name="igbinary_061.phpt" role="test" />
     <file name="igbinary_062.phpt" role="test" />
-    <file name="igbinary_063_php72.phpt" role="test" />
     <file name="igbinary_063_php7.phpt" role="test" />
+    <file name="igbinary_063_php72.phpt" role="test" />
     <file name="igbinary_064.phpt" role="test" />
     <file name="igbinary_065.phpt" role="test" />
     <file name="igbinary_066.phpt" role="test" />
     <file name="igbinary_067.phpt" role="test" />
     <file name="igbinary_068.phpt" role="test" />
     <file name="igbinary_069.phpt" role="test" />
+    <file name="igbinary_070.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
