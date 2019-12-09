@@ -208,6 +208,7 @@ struct igbinary_unserialize_data {
 
 	int error;						/**< Error number. Not used. */
 	smart_string string0_buf;			/**< Temporary buffer for strings */
+	// TODO HashTable *ref_props;           /** For php 7.4 typed properties
 };
 
 #define IGB_REF_VAL_2(igsd, n)	((igsd)->references[(n)])
@@ -2507,12 +2508,25 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 		/* Use NULL because inserting UNDEF into array does not add a new element */
 		ZVAL_NULL(&v);
 		zval *prototype_value = zend_hash_find(h, key_str);
+#if PHP_VERSION_ID >= 70400
+		zend_property_info *info = NULL;
+#endif
 		if (prototype_value != NULL) {
 			if (Z_TYPE_P(prototype_value) == IS_INDIRECT) {
 				prototype_value = Z_INDIRECT_P(prototype_value);
+#if PHP_VERSION_ID >= 70400
+				info = zend_get_typed_property_info_for_slot(Z_OBJ_P(z_deref), prototype_value);
+#endif
+				// TODO: Use var_push_dtor instead?
+				zval_ptr_dtor(prototype_value);
+				// Somehow needed for tests/igbinary_bug72134.phpt to pass.
+				ZVAL_NULL(prototype_value);
+				vp = zend_hash_update_ind(h, key_str, &v);
+			} else {
+				zval_ptr_dtor(prototype_value);
+				ZVAL_NULL(prototype_value);
+				vp = zend_hash_update_ind(h, key_str, &v);
 			}
-			convert_to_null(prototype_value);
-			vp = zend_hash_update_ind(h, key_str, &v);
 		} else {
 			if (!did_extend) {
 				/* n is at least one, because we're looping from 0..n-1 */
@@ -2534,10 +2548,23 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 
 		ZEND_ASSERT(vp != NULL);
 		if (igbinary_unserialize_zval(igsd, vp, WANT_CLEAR)) {
+			/* Unserializing a property into this zval has failed. */
 			/* zval_ptr_dtor(z); */
 			/* zval_ptr_dtor(vp); */
 			return 1;
 		}
+#if PHP_VERSION_ID >= 70400
+		if (UNEXPECTED(info)) {
+			if (!zend_verify_prop_assignable_by_ref(info, vp, /* strict */ 1)) {
+				zval_ptr_dtor(vp);
+				ZVAL_UNDEF(vp);
+				return 1;
+			}
+			if (Z_ISREF_P(vp)) {
+				ZEND_REF_ADD_TYPE_SOURCE(Z_REF_P(vp), info);
+			}
+		}
+#endif
 	}
 
 	return 0;
