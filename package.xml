@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-12-08</date>
+ <date>2019-12-09</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.0b1</release>
+  <release>3.1.0b2</release>
   <api>1.2.1</api>
  </version>
  <stability>
@@ -43,8 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Support php 7.4's __serialize/__unserialize the same way serialize()/unserialize() does.
-  This deliberately only supports __serialize/__unserialize in php 7.4, to making switching to/from serialize()/unserialize() as straightforward as possible.
+* Fix crashes related to unserializing instances of classes with php 7.4 typed properties.
  </notes>
  <contents>
   <dir name="/">
@@ -80,6 +79,8 @@
     <file name="__serialize_008.phpt" role="test" />
     <file name="__serialize_009.phpt" role="test" />
     <file name="__serialize_010.phpt" role="test" />
+    <file name="__serialize_011.phpt" role="test" />
+    <file name="__serialize_012.phpt" role="test" />
     <file name="igbinary_001.phpt" role="test" />
     <file name="igbinary_002.phpt" role="test" />
     <file name="igbinary_003.phpt" role="test" />
@@ -156,6 +157,7 @@
     <file name="igbinary_068.phpt" role="test" />
     <file name="igbinary_069.phpt" role="test" />
     <file name="igbinary_070.phpt" role="test" />
+    <file name="igbinary_071.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
@@ -175,6 +177,23 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2019-12-08</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.0b1</release>
+    <api>1.2.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Support php 7.4's __serialize/__unserialize the same way serialize()/unserialize() does.
+  This deliberately only supports __serialize/__unserialize in php 7.4, to making switching to/from serialize()/unserialize() as straightforward as possible.
+   </notes>
+  </release>
   <release>
    <date>2019-03-20</date>
    <time>16:00:00</time>
