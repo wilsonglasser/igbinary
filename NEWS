@@ -1,3 +1,8 @@
+3.1.0b2 2019-12-09
+=======
+
+* Fix crashes related to unserializing instances of classes with php 7.4 typed properties.
+
 3.1.0b1 2019-12-08
 =======
 
