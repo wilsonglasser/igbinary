@@ -1228,15 +1228,6 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 		if (incomplete_class && strcmp(ZSTR_VAL(key), MAGIC_MEMBER) == 0) {
 			continue;
 		}
-
-		if (key == NULL) {
-			/* Key is numeric */
-			RETURN_1_IF_NON_ZERO(igbinary_serialize_long(igsd, key_index));
-		} else {
-			/* Key is string */
-			RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, key));
-		}
-
 		if (d == NULL) {
 			php_error_docref(NULL, E_NOTICE, "Received NULL value from hash.");
 			if (object) {
@@ -1249,6 +1240,22 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 		if (Z_TYPE_P(d) == IS_INDIRECT) {
 			d = Z_INDIRECT_P(d);
 		}
+		if (Z_TYPE_P(d) == IS_UNDEF) {
+			if (!serialize_props) {
+				RETURN_1_IF_NON_ZERO(igbinary_serialize_null(igsd));
+				continue;
+			}
+			ZVAL_NULL(d);
+		}
+
+		if (key == NULL) {
+			/* Key is numeric */
+			RETURN_1_IF_NON_ZERO(igbinary_serialize_long(igsd, key_index));
+		} else {
+			/* Key is string */
+			RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, key));
+		}
+
 		/* we should still add element even if it's not OK,
 		 * since we already wrote the length of the array before */
 		if (Z_TYPE_P(d) == IS_UNDEF) {
