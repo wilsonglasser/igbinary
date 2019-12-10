@@ -1,3 +1,9 @@
+3.1.0b3 2019-12-10
+=======
+
+* Skip over object properties that are uninitialized or unset when serializing, instead of serializing them as null.
+  This is done to avoid Errors when unserializing their values for php 7.4 typed properties.
+
 3.1.0b2 2019-12-09
 =======
 
