@@ -430,7 +430,7 @@ static inline size_t igsd_append_ref(struct igbinary_unserialize_data *igsd, str
 		}
 
 		struct igbinary_value_ref *new_references = erealloc(igsd->references, sizeof(igsd->references[0]) * igsd->references_capacity);
-		if (new_references == NULL) {
+		if (UNEXPECTED(new_references == NULL)) {
 			return SIZE_MAX;
 		}
 		igsd->references = new_references;
@@ -460,9 +460,8 @@ static inline int igsd_ensure_defer_capacity(struct igbinary_unserialize_data *i
 }
 
 static inline int igsd_defer_wakeup(struct igbinary_unserialize_data *igsd, zend_object *object) {
-	if (UNEXPECTED(igsd_ensure_defer_capacity(igsd))) {
-		return 1;
-	}
+	// TODO: This won't be properly garbage collected if there is an OOM error, but would php terminate instead?
+	RETURN_1_IF_NON_ZERO(igsd_ensure_defer_capacity(igsd));
 
 	struct deferred_call *c = &igsd->deferred[igsd->deferred_count++];
 	c->data.wakeup = object;
@@ -475,9 +474,7 @@ static inline int igsd_defer_wakeup(struct igbinary_unserialize_data *igsd, zend
 /* igsd_defer_unserialize {{{ */
 #if PHP_VERSION_ID >= 70400
 static inline int igsd_defer_unserialize(struct igbinary_unserialize_data *igsd, zend_object *object, zval param) {
-	if (UNEXPECTED(igsd_ensure_defer_capacity(igsd))) {
-		return 1;
-	}
+	RETURN_1_IF_NON_ZERO(igsd_ensure_defer_capacity(igsd));
 
 	struct deferred_unserialize_call* call = emalloc(sizeof(struct deferred_unserialize_call));
 	call->object = object;
@@ -601,29 +598,29 @@ IGBINARY_API int igbinary_serialize_ex(uint8_t **ret, size_t *ret_len, zval *z, 
 	uint8_t *tmpbuf;
 	// While we can't get passed references through the PHP_FUNCTIONs igbinary declares, third party code can invoke igbinary's methods with references.
 	// See https://github.com/php-memcached-dev/php-memcached/issues/326
-	if (Z_TYPE_P(z) == IS_INDIRECT) {
+	if (UNEXPECTED(Z_TYPE_P(z) == IS_INDIRECT)) {
 		z = Z_INDIRECT_P(z);
 	}
 	ZVAL_DEREF(z);
 
-	if (igbinary_serialize_data_init(&igsd, Z_TYPE_P(z) != IS_OBJECT && Z_TYPE_P(z) != IS_ARRAY, memory_manager)) {
+	if (UNEXPECTED(igbinary_serialize_data_init(&igsd, Z_TYPE_P(z) != IS_OBJECT && Z_TYPE_P(z) != IS_ARRAY, memory_manager))) {
 		zend_error(E_WARNING, "igbinary_serialize: cannot init igsd");
 		return 1;
 	}
 
-	if (igbinary_serialize_header(&igsd) != 0) {
+	if (UNEXPECTED(igbinary_serialize_header(&igsd) != 0)) {
 		zend_error(E_WARNING, "igbinary_serialize: cannot write header");
 		igbinary_serialize_data_deinit(&igsd, 1);
 		return 1;
 	}
 
-	if (igbinary_serialize_zval(&igsd, z) != 0) {
+	if (UNEXPECTED(igbinary_serialize_zval(&igsd, z) != 0)) {
 		igbinary_serialize_data_deinit(&igsd, 1);
 		return 1;
 	}
 
-	/* Explicit nul termination */
-	if (igbinary_serialize8(&igsd, 0) != 0) {
+	/* Explicit null termination */
+	if (UNEXPECTED(igbinary_serialize8(&igsd, 0) != 0)) {
 		igbinary_serialize_data_deinit(&igsd, 1);
 		return 1;
 	}
@@ -2730,7 +2727,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 		// The actual value of ref is unused. We use ref_n later in this function, after creating the object.
 		struct igbinary_value_ref ref = {{0}, 0};
 		ref_n = igsd_append_ref(igsd, ref);
-		if (ref_n == SIZE_MAX) {
+		if (UNEXPECTED(ref_n == SIZE_MAX)) {
 			zend_string_release(class_name);
 			return 1;
 		}
@@ -2764,13 +2761,12 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 					}
 					/* Unserialize the array as an array for a deferred call to __unserialize */
 					zval param;
+					int result;
 					zend_string_release(class_name);
-					if (igbinary_unserialize_array(igsd, t, &param, 0, false)) {
-						return 1;
-					}
+					result = igbinary_unserialize_array(igsd, t, &param, 0, false);
 					ZEND_ASSERT(Z_TYPE_P(z) == IS_OBJECT);
 					igsd_defer_unserialize(igsd, Z_OBJ_P(z), param);
-					return 0;
+					return result;
 				}
 #endif
 			}
