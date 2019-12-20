@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2019-12-10</date>
+ <date>2019-12-20</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.0b3</release>
+  <release>3.1.0b4</release>
   <api>1.2.2</api>
  </version>
  <stability>
@@ -43,8 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Skip over object properties that are uninitialized or unset when serializing, instead of serializing them as null.
-  This is done to avoid Errors when unserializing their values for php 7.4 typed properties.
+* Don't call __destruct for objects where deferred __unserialize calls were not started (e.g. due to Serializable::unserialize throwing).
  </notes>
  <contents>
   <dir name="/">
@@ -91,6 +90,8 @@
     <file name="__serialize_015_php8.phpt" role="test" />
     <file name="__serialize_016.phpt" role="test" />
     <file name="__serialize_016_php8.phpt" role="test" />
+    <file name="__serialize_017.phpt" role="test" />
+    <file name="__serialize_018.phpt" role="test" />
     <file name="igbinary_001.phpt" role="test" />
     <file name="igbinary_002.phpt" role="test" />
     <file name="igbinary_003.phpt" role="test" />
@@ -169,6 +170,14 @@
     <file name="igbinary_070.phpt" role="test" />
     <file name="igbinary_071.phpt" role="test" />
     <file name="igbinary_071_php8.phpt" role="test" />
+    <file name="igbinary_072.phpt" role="test" />
+    <file name="igbinary_073.phpt" role="test" />
+    <file name="igbinary_074.phpt" role="test" />
+    <file name="igbinary_075.phpt" role="test" />
+    <file name="igbinary_076.phpt" role="test" />
+    <file name="igbinary_077.phpt" role="test" />
+    <file name="igbinary_078.phpt" role="test" />
+    <file name="igbinary_079.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
@@ -188,6 +197,23 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2019-12-10</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.0b3</release>
+    <api>1.2.2</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Skip over object properties that are uninitialized or unset when serializing, instead of serializing them as null.
+  This is done to avoid Errors when unserializing their values for php 7.4 typed properties.
+   </notes>
+  </release>
   <release>
    <date>2019-12-09</date>
    <time>16:00:00</time>
