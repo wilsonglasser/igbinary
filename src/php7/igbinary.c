@@ -599,7 +599,7 @@ IGBINARY_API int igbinary_serialize(uint8_t **ret, size_t *ret_len, zval *z) {
 IGBINARY_API int igbinary_serialize_ex(uint8_t **ret, size_t *ret_len, zval *z, struct igbinary_memory_manager *memory_manager) {
 	struct igbinary_serialize_data igsd;
 	uint8_t *tmpbuf;
-	// While we can't get passed references through the PHP_FUNCTIONs igbinary declares, third party code can call us igbinary's methods with references.
+	// While we can't get passed references through the PHP_FUNCTIONs igbinary declares, third party code can invoke igbinary's methods with references.
 	// See https://github.com/php-memcached-dev/php-memcached/issues/326
 	if (Z_TYPE_P(z) == IS_INDIRECT) {
 		z = Z_INDIRECT_P(z);
