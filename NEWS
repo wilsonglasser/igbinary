@@ -1,4 +1,4 @@
-3.1.0b4 2019-12-20 (dev)
+3.1.0b4 2019-12-20
 =======
 
 * Don't call __destruct for objects where deferred __unserialize calls were not started (e.g. due to Serializable::unserialize throwing).
