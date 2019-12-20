@@ -33,7 +33,7 @@ fi
 PHP_FOLDER="php-$PHP_CUSTOM_VERSION"
 # Otherwise, put a minimal installation inside of the cache.
 PHP_TAR_FILE="$PHP_FOLDER.tar.bz2"
-curl --verbose https://secure.php.net/distributions/$PHP_TAR_FILE -o $PHP_TAR_FILE
+curl --location --verbose https://secure.php.net/distributions/$PHP_TAR_FILE -o $PHP_TAR_FILE
 
 tar xjf $PHP_TAR_FILE
 
