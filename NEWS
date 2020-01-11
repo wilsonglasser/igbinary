@@ -1,3 +1,12 @@
+3.1.1a1 2020-01-11
+=======
+
+* Throw when an uninitialized php 7.4 typed property is included in the result of __sleep(),
+  instead of emitting a notice and attempting to represent the unset/uninitialized value as null (#258).
+  See https://bugs.php.net/bug.php?id=79002
+
+  Uninitialized properties without types (from __sleep) continue to cause igbinary to emit notices and are represented as null.
+
 3.1.0 2019-12-27
 =======
 
