@@ -1340,9 +1340,34 @@ inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *i
 	return 0;
 }
 /* }}} */
-/* {{{ igbinary_serialize_array_sleep */
+/* {{{ igbinary_serialize_array_sleep_single_prop_value */
+/** Serializes one value of an object's properties array, for use with the __sleep function. */
+inline static int igbinary_serialize_array_sleep_single_prop_value(struct igbinary_serialize_data *igsd, zval *z, zval *v, zend_class_entry *ce, zend_string *prop_name) {
+	/* Precondition: All args are non-null */
+	if (Z_TYPE_P(v) == IS_INDIRECT) {
+		v = Z_INDIRECT_P(v);
+		if (UNEXPECTED(Z_TYPE_P(v) == IS_UNDEF)) {
+#if PHP_VERSION_ID >= 70400
+			if (UNEXPECTED(zend_get_typed_property_info_for_slot(Z_OBJ_P(z), v) != NULL)) {
+				zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization (in __sleep)", ZSTR_VAL(ce->name), ZSTR_VAL(prop_name));
+				return 1;
+			}
+#endif
+			goto serialize_untyped_uninitialized_prop;
+		}
+	} else {
+		if (UNEXPECTED(Z_TYPE_P(v) == IS_UNDEF)) {
+serialize_untyped_uninitialized_prop:
+			php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", ZSTR_VAL(prop_name));
+			return igbinary_serialize_null(igsd);
+		}
+	}
+	return igbinary_serialize_zval(igsd, v);
+}
+/* }}} */
+/* {{{ igbinary_serialize_array_sleep_inner */
 /** Serializes object's properties array with __sleep -function. */
-inline static int igbinary_serialize_array_sleep_inner(struct igbinary_serialize_data *igsd, HashTable *h, size_t n, HashTable *object_properties, zend_class_entry *ce, bool incomplete_class) {
+inline static int igbinary_serialize_array_sleep_inner(struct igbinary_serialize_data *igsd, zval *z, HashTable *h, size_t n, HashTable *object_properties, zend_class_entry *ce, bool incomplete_class) {
 	zval *d;
 	zval *v;
 	zend_string *key;
@@ -1361,85 +1386,68 @@ inline static int igbinary_serialize_array_sleep_inner(struct igbinary_serialize
 			/* we should still add element even if it's not OK,
 			 * since we already wrote the length of the array before
 			 * serialize null as key-value pair */
+			/* TODO: Allow creating a tmp string, like php's serialize() */
 			RETURN_1_IF_NON_ZERO(igbinary_serialize_null(igsd));
-		} else {
-			zend_string *prop_name = Z_STR_P(d);
+			continue;
+		}
+		zend_string *prop_name = Z_STR_P(d);
 
-			if ((v = zend_hash_find(object_properties, prop_name)) != NULL) {
-				RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, prop_name));
+		if ((v = zend_hash_find(object_properties, prop_name)) != NULL) {
+			RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, prop_name));
 
-				if (Z_TYPE_P(v) == IS_INDIRECT) {
-					v = Z_INDIRECT_P(v);
-				}
-				if (UNEXPECTED(Z_TYPE_P(v) == IS_UNDEF)) {
-					php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_P(d));
-					RETURN_1_IF_NON_ZERO(igbinary_serialize_null(igsd));
-					continue;
-				}
-				RETURN_1_IF_NON_ZERO(igbinary_serialize_zval(igsd, v));
-			} else if (ce) {
-				zend_string *mangled_prop_name;
+			RETURN_1_IF_NON_ZERO(igbinary_serialize_array_sleep_single_prop_value(igsd, z, v, ce, prop_name));
+		} else if (ce) {
+			zend_string *mangled_prop_name;
 
-				v = NULL;
+			v = NULL;
 
-				do {
-					/* try private */
-					// TODO: check for FAILURE
-					mangled_prop_name = zend_mangle_property_name(ZSTR_VAL(ce->name), ZSTR_LEN(ce->name),
+			do {
+				/* try private */
+				// TODO: check for FAILURE
+				mangled_prop_name = zend_mangle_property_name(ZSTR_VAL(ce->name), ZSTR_LEN(ce->name),
+					ZSTR_VAL(prop_name), ZSTR_LEN(prop_name), ce->type & ZEND_INTERNAL_CLASS);
+				v = zend_hash_find(object_properties, mangled_prop_name);
+
+				/* try protected */
+				if (v == NULL) {
+					zend_string_release(mangled_prop_name);
+					mangled_prop_name = zend_mangle_property_name("*", 1,
 						ZSTR_VAL(prop_name), ZSTR_LEN(prop_name), ce->type & ZEND_INTERNAL_CLASS);
+
 					v = zend_hash_find(object_properties, mangled_prop_name);
+				}
 
-					/* try protected */
-					if (v == NULL) {
-						zend_string_release(mangled_prop_name);
-						mangled_prop_name = zend_mangle_property_name("*", 1,
-							ZSTR_VAL(prop_name), ZSTR_LEN(prop_name), ce->type & ZEND_INTERNAL_CLASS);
-
-						v = zend_hash_find(object_properties, mangled_prop_name);
-					}
-
-					/* Neither property exist */
-					if (v == NULL) {
-						zend_string_release(mangled_prop_name);
-
-						php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_P(d));
-						RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, Z_STR_P(d)));
-
-						RETURN_1_IF_NON_ZERO(igbinary_serialize_null(igsd));
-
-						break;
-					}
-
-					if (Z_TYPE_P(v) == IS_INDIRECT) {
-						v = Z_INDIRECT_P(v);
-					}
-
-					if (igbinary_serialize_string(igsd, mangled_prop_name) != 0) {
-						zend_string_release(mangled_prop_name);
-						zend_release_properties(object_properties);
-						return 1;
-					}
-
+				/* Neither property exist */
+				if (v == NULL) {
 					zend_string_release(mangled_prop_name);
 
-					if (UNEXPECTED(Z_TYPE_P(v) == IS_UNDEF)) {
-						php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", Z_STRVAL_P(d));
-						RETURN_1_IF_NON_ZERO(igbinary_serialize_null(igsd));
-						break;
-					}
-					RETURN_1_IF_NON_ZERO(igbinary_serialize_zval(igsd, v));
-				} while (0);
+					php_error_docref(NULL, E_NOTICE, "\"%s\" returned as member variable from __sleep() but does not exist", ZSTR_VAL(prop_name));
+					RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, prop_name));
 
-			} else {
-				/* if all else fails, just serialize the value in anyway. */
-				RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, Z_STR_P(d)));
+					RETURN_1_IF_NON_ZERO(igbinary_serialize_null(igsd));
 
-				if (Z_TYPE_P(v) == IS_INDIRECT) {
-					v = Z_INDIRECT_P(v);
+					break;
 				}
 
-				RETURN_1_IF_NON_ZERO(igbinary_serialize_zval(igsd, v));
+				if (igbinary_serialize_string(igsd, mangled_prop_name) != 0) {
+					zend_string_release(mangled_prop_name);
+					zend_release_properties(object_properties);
+					return 1;
+				}
+
+				zend_string_release(mangled_prop_name);
+				RETURN_1_IF_NON_ZERO(igbinary_serialize_array_sleep_single_prop_value(igsd, z, v, ce, prop_name));
+			} while (0);
+
+		} else {
+			/* if all else fails, just serialize the value in anyway. */
+			RETURN_1_IF_NON_ZERO(igbinary_serialize_string(igsd, prop_name));
+
+			if (Z_TYPE_P(v) == IS_INDIRECT) {
+				v = Z_INDIRECT_P(v);
 			}
+
+			RETURN_1_IF_NON_ZERO(igbinary_serialize_zval(igsd, v));
 		}
 	} ZEND_HASH_FOREACH_END();
 
@@ -1478,7 +1486,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 
 	object_properties = zend_get_properties_for(z, ZEND_PROP_PURPOSE_SERIALIZE);
 
-	int r = igbinary_serialize_array_sleep_inner(igsd, h, n, object_properties, ce, incomplete_class);
+	int r = igbinary_serialize_array_sleep_inner(igsd, z, h, n, object_properties, ce, incomplete_class);
 	zend_release_properties(object_properties);
 	return r;
 }
