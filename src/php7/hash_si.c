@@ -172,7 +172,13 @@ struct hash_si_result hash_si_find_or_insert(struct hash_si *h, zend_string *key
 	struct hash_si_result result;
 	struct hash_si_pair *pair;
 	uint32_t key_hash = ZSTR_HASH(key_zstr);
-
+#if SIZEOF_ZEND_LONG > 4
+	if (UNEXPECTED(key_hash == 0)) {
+		/* A key_hash of uint32_t(0) would be treated like a gap when inserted. Change the hash used to 1 instead. */
+		/* ZSTR_HASH is non-zero, but the lower bits can be 0 */
+		key_hash = 1;
+	}
+#endif
 	pair = _hash_si_find(h, key_zstr, key_hash);
 
 	if (pair->key_zstr == NULL) {

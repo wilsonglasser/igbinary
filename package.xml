@@ -31,23 +31,20 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2020-01-11</date>
+ <date>2020-01-16</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.1a1</release>
+  <release>3.1.1</release>
   <api>1.2.3</api>
  </version>
  <stability>
-  <release>alpha</release>
+  <release>stable</release>
   <api>stable</api>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Throw when an uninitialized php 7.4 typed property is included in the result of __sleep(),
-  instead of emitting a notice and attempting to represent the unset/uninitialized value as null (#258).
-  See https://bugs.php.net/bug.php?id=79002
-
-  Uninitialized properties without types from __sleep continue to emit notices and be represented as null.
+* Fix bug causing incorrect serialization for 1 in 2**32 strings on 64-bit php installations when string hashes collide.
+  (https://github.com/igbinary/igbinary/issues/260)
  </notes>
  <contents>
   <dir name="/">
@@ -182,6 +179,7 @@
     <file name="igbinary_077.phpt" role="test" />
     <file name="igbinary_078.phpt" role="test" />
     <file name="igbinary_079.phpt" role="test" />
+    <file name="igbinary_080.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
@@ -201,6 +199,42 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2020-01-11</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.1a1</release>
+    <api>1.2.2</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Throw when an uninitialized php 7.4 typed property is included in the result of __sleep(),
+  instead of emitting a notice and attempting to represent the unset/uninitialized value as null (#258).
+  See https://bugs.php.net/bug.php?id=79002
+
+  Uninitialized properties without types (from __sleep) continue to cause igbinary to emit notices and are represented as null.
+   </notes>
+  </release>
+  <release>
+   <date>2019-12-27</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.0</release>
+    <api>1.2.2</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Same as 3.1.0b4.
+   </notes>
+  </release>
   <release>
    <date>2019-12-20</date>
    <time>16:00:00</time>

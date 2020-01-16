@@ -1,3 +1,9 @@
+3.1.1 2020-01-16
+=======
+
+* Fix bug causing incorrect serialization for 1 in 2**32 strings on 64-bit php installations when string hashes collide.
+  (https://github.com/igbinary/igbinary/issues/260)
+
 3.1.1a1 2020-01-11
 =======
 
