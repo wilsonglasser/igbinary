@@ -89,32 +89,36 @@ inline static void hash_si_rehash(struct hash_si *h) {
 	size_t old_size;
 	size_t new_size;
 	size_t new_mask;
-	struct hash_si_pair *data;
+	struct hash_si_pair *old_data;
 	struct hash_si_pair *new_data;
 
-	assert(h != NULL);
+	/* Allocate a table with double the capacity (the next power of 2). */
+	ZEND_ASSERT(h != NULL);
 	old_size = h->mask + 1;
 	new_size = old_size * 2;
 	new_mask = new_size - 1;
 
-	data = h->data;
+	old_data = h->data;
 	new_data = (struct hash_si_pair *)ecalloc(new_size, sizeof(struct hash_si_pair));
+	h->data = new_data;
+	h->mask = new_mask;
 
+	/* Copy old entries to new entries */
 	for (i = 0; i < old_size; i++) {
-		const struct hash_si_pair *old_pair = &data[i];
+		const struct hash_si_pair *old_pair = &old_data[i];
 		if (old_pair->key_zstr != NULL) {
 			uint32_t hv = old_pair->key_hash & new_mask;
 			/* We already computed the hash, avoid recomputing it. */
+			/* Do linear probing for the next free slot. */
 			while (new_data[hv].key_hash != 0) {
 				hv = (hv + 1) & new_mask;
 			}
-			new_data[hv] = data[i];
+			new_data[hv] = old_data[i];
 		}
 	}
 
-	efree(data);
-	h->data = new_data;
-	h->mask = new_mask;
+	/* Free old entries */
+	efree(old_data);
 }
 /* }}} */
 /**

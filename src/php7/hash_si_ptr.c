@@ -93,33 +93,41 @@ void hash_si_ptr_deinit(struct hash_si_ptr *h) {
  */
 inline static void hash_si_ptr_rehash(struct hash_si_ptr *h) {
 	size_t i;
-	struct hash_si_ptr newh;
+	size_t old_size;
 	size_t size;
 	size_t mask;
+	struct hash_si_ptr_pair *old_data;
+	struct hash_si_ptr_pair *new_data;
 
 	ZEND_ASSERT(h != NULL);
 
-	size = h->size * 2;
+	/* Allocate a table with double the capacity (the next power of 2). */
+	old_size = h->size;
+	size = old_size * 2;
 	mask = size - 1;
-	hash_si_ptr_init(&newh, size);
+	old_data = h->data;
+	new_data = (struct hash_si_ptr_pair *)ecalloc(size, sizeof(struct hash_si_ptr_pair));
 
-	for (i = 0; i < h->size; i++) {
-		if (h->data[i].key != HASH_PTR_KEY_INVALID) {
-			uint32_t hv = inline_hash_of_address(h->data[i].key) & mask;
+	h->size = size;
+	h->data = new_data;
 
-			while (newh.data[hv].key != HASH_PTR_KEY_INVALID) {
-				ZEND_ASSERT(newh.data[hv].key != h->data[i].key);
-				/* linear prob */
+	/* Copy old entries to new entries */
+	for (i = 0; i < old_size; i++) {
+		if (old_data[i].key != HASH_PTR_KEY_INVALID) {
+			uint32_t hv = inline_hash_of_address(old_data[i].key) & mask;
+
+			/* Do linear probing for the next free slot. */
+			while (new_data[hv].key != HASH_PTR_KEY_INVALID) {
+				ZEND_ASSERT(new_data[hv].key != old_data[i].key);
 				hv = (hv + 1) & mask;
 			}
 
-			newh.data[hv] = h->data[i];
+			new_data[hv] = old_data[i];
 		}
 	}
 
-	efree(h->data);
-	h->data = newh.data;
-	h->size *= 2;
+	/* Free old entries */
+	efree(old_data);
 }
 /* }}} */
 /* {{{ hash_si_ptr_find_or_insert */
