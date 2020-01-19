@@ -245,7 +245,7 @@ inline static int igbinary_serialize_chararray(struct igbinary_serialize_data *i
 
 inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd, zval *z, bool object, bool incomplete_class, bool serialize_props);
 inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *igsd, zval *z, bool object);
-inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data *igsd, zval *z, HashTable *ht, zend_class_entry *ce, bool incomplete_class);
+inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data *igsd, zval *z, HashTable *ht, zend_class_entry *ce);
 inline static int igbinary_serialize_object_name(struct igbinary_serialize_data *igsd, zend_string *name);
 inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd, zval *z);
 
@@ -1367,17 +1367,11 @@ serialize_untyped_uninitialized_prop:
 /* }}} */
 /* {{{ igbinary_serialize_array_sleep_inner */
 /** Serializes object's properties array with __sleep -function. */
-inline static int igbinary_serialize_array_sleep_inner(struct igbinary_serialize_data *igsd, zval *z, HashTable *h, size_t n, HashTable *object_properties, zend_class_entry *ce, bool incomplete_class) {
+inline static int igbinary_serialize_array_sleep_inner(struct igbinary_serialize_data *igsd, zval *z, HashTable *h, size_t n, HashTable *object_properties, zend_class_entry *ce) {
 	zval *d;
 	zval *v;
-	zend_string *key;
 
-	ZEND_HASH_FOREACH_STR_KEY_VAL(h, key, d) {
-		/* skip magic member in incomplete classes */
-		if (incomplete_class && key != NULL && strcmp(ZSTR_VAL(key), MAGIC_MEMBER) == 0) {
-			continue;
-		}
-
+	ZEND_HASH_FOREACH_VAL(h, d) {
 		if (UNEXPECTED(d == NULL || Z_TYPE_P(d) != IS_STRING)) {
 			php_error_docref(NULL, E_NOTICE, "__sleep should return an array only "
 					"containing the names of instance-variables to "
@@ -1456,14 +1450,9 @@ inline static int igbinary_serialize_array_sleep_inner(struct igbinary_serialize
 /* }}} */
 /* {{{ igbinary_serialize_array_sleep */
 /** Serializes object's properties array with __sleep -function. */
-inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data *igsd, zval *z, HashTable *h, zend_class_entry *ce, bool incomplete_class) {
+inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data *igsd, zval *z, HashTable *h, zend_class_entry *ce) {
 	HashTable *object_properties;
 	size_t n = zend_hash_num_elements(h);
-
-	/* Decrease array size by one, because of magic member (with class name) */
-	if (n > 0 && incomplete_class) {
-		--n;
-	}
 
 	/* Serialize array id. */
 	if (n <= 0xff) {
@@ -1486,7 +1475,7 @@ inline static int igbinary_serialize_array_sleep(struct igbinary_serialize_data 
 
 	object_properties = zend_get_properties_for(z, ZEND_PROP_PURPOSE_SERIALIZE);
 
-	int r = igbinary_serialize_array_sleep_inner(igsd, z, h, n, object_properties, ce, incomplete_class);
+	int r = igbinary_serialize_array_sleep_inner(igsd, z, h, n, object_properties, ce);
 	zend_release_properties(object_properties);
 	return r;
 }
@@ -1749,7 +1738,7 @@ inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd
 				/* FIXME: is this ok? */
 				/* Valid, but skip */
 			} else if (HASH_OF(&h)) {
-				r = igbinary_serialize_array_sleep(igsd, z, HASH_OF(&h), ce, incomplete_class);
+				r = igbinary_serialize_array_sleep(igsd, z, HASH_OF(&h), ce);
 			} else {
 				php_error_docref(NULL, E_NOTICE, "__sleep should return an array only "
 						"containing the names of instance-variables to "
