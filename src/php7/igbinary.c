@@ -559,6 +559,7 @@ static int igbinary_finish_deferred_calls(struct igbinary_unserialize_data *igsd
 	return delayed_call_failed;
 }
 /* }}} */
+/* }}} */
 
 /* {{{ Memory allocator wrappers */
 static inline void *igbinary_mm_wrapper_malloc(size_t size, void *context)
@@ -1616,11 +1617,10 @@ inline static int igbinary_serialize_object_standard_serializer(struct igbinary_
 	return r;
 }
 /* }}} */
-
 /* igbinary_var_serialize_call_magic_serialize {{{ */
 // Source: ext/standard/var.c from php-src
 #if PHP_VERSION_ID >= 70400
-inline static int igbinary_var_serialize_call_magic_serialize(zval *retval, zval *obj) /* {{{ */
+inline static int igbinary_var_serialize_call_magic_serialize(zval *retval, zval *obj)
 {
 	zval fname;
 	int res;
@@ -2513,21 +2513,23 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 		zend_property_info *info = NULL;
 #endif
 		if (prototype_value != NULL) {
+			zval orig_zval_data;
 			if (Z_TYPE_P(prototype_value) == IS_INDIRECT) {
+				zval orig_zval_data;
+				/* This is a declared object property */
 				prototype_value = Z_INDIRECT_P(prototype_value);
 #if PHP_VERSION_ID >= 70400
 				info = zend_get_typed_property_info_for_slot(Z_OBJ_P(z_deref), prototype_value);
 #endif
-				// TODO: Use var_push_dtor instead?
-				zval_ptr_dtor(prototype_value);
-				// Somehow needed for tests/igbinary_bug72134.phpt to pass.
-				ZVAL_NULL(prototype_value);
-				vp = zend_hash_update_ind(h, key_str, &v);
-			} else {
-				zval_ptr_dtor(prototype_value);
-				ZVAL_NULL(prototype_value);
-				vp = zend_hash_update_ind(h, key_str, &v);
 			}
+			/* This is written to avoid the overhead of a second zend_hash_update call. See https://github.com/php/php-src/pull/5095 */
+			/* TODO: Use var_push_dtor instead (like php-src), in case of gc causing issues? */
+			orig_zval_data = *prototype_value;
+			/* Just override the original value directly */
+			ZVAL_COPY_VALUE(prototype_value, &v);
+			vp = prototype_value;
+			/* Do any garbage collections on a raw copy of the zval (or the indirect being pointed to) AFTER overwriting the original zval. */
+			zval_ptr_dtor(&orig_zval_data);
 		} else {
 			if (!did_extend) {
 				/* n is at least one, because we're looping from 0..n-1 */
