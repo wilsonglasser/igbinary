@@ -2029,25 +2029,26 @@ inline static int igbinary_unserialize_long(struct igbinary_unserialize_data *ig
 			return 1;
 		}
 
-		/* check for boundaries */
+		/* check for boundaries (perform only one comparison in common case) */
 		tmp32 = igbinary_unserialize32(igsd);
 #if SIZEOF_ZEND_LONG == 4
-		if (tmp32 > 0x80000000 || (tmp32 == 0x80000000 && t == igbinary_type_long32p)) {
+		if (UNEXPECTED(tmp32 >= 0x80000000 && (tmp32 > 0x80000000 || t == igbinary_type_long32p))) {
 			zend_error(E_WARNING, "igbinary_unserialize_long: 64bit long on 32bit platform?");
 			tmp32 = 0; /* t == igbinary_type_long32p ? LONG_MAX : LONG_MIN; */
 		}
 #endif
 		*ret = (zend_long)(t == igbinary_type_long32n ? -1 : 1) * tmp32;
-	} else if (t == igbinary_type_long64p || t == igbinary_type_long64n) {
+	} else {
+		ZEND_ASSERT(t == igbinary_type_long64p || t == igbinary_type_long64n);
 #if SIZEOF_ZEND_LONG == 8
 		if (IGB_NEEDS_MORE_DATA(igsd, 8)) {
 			zend_error(E_WARNING, "igbinary_unserialize_long: end-of-data");
 			return 1;
 		}
 
-		/* check for boundaries */
+		/* check for boundaries (perform only one comparison in common case) */
 		tmp64 = igbinary_unserialize64(igsd);
-		if (tmp64 > 0x8000000000000000 || (tmp64 == 0x8000000000000000 && t == igbinary_type_long64p)) {
+		if (UNEXPECTED(tmp64 >= 0x8000000000000000 && (tmp64 > 0x8000000000000000 || t == igbinary_type_long64p))) {
 			zend_error(E_WARNING, "igbinary_unserialize_long: too big 64bit long.");
 			tmp64 = 0; /* t == igbinary_type_long64p ? LONG_MAX : LONG_MIN */
 		}
@@ -2061,10 +2062,6 @@ inline static int igbinary_unserialize_long(struct igbinary_unserialize_data *ig
 #else
 #error "Strange sizeof(zend_long)."
 #endif
-	} else {
-		*ret = 0;
-		zend_error(E_WARNING, "igbinary_unserialize_long: unknown type '%02x', position %zu", t, (size_t)IGB_BUFFER_OFFSET(igsd));
-		return 1;
 	}
 
 	return 0;
@@ -2299,6 +2296,7 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 
 		if (IGB_NEEDS_MORE_DATA(igsd, 1)) {
 			zend_error(E_WARNING, "igbinary_unserialize_array: end-of-data");
+cleanup:
 			zval_dtor(z);
 			ZVAL_NULL(z);
 			return 1;
@@ -2308,37 +2306,47 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 
 		switch (key_type) {
 			case igbinary_type_long8p:
-			case igbinary_type_long8n:
+				/* Manually inline igbinary_unserialize_long() for array keys from 0 to 255, because they're the most common among integers. */
+				if (IGB_NEEDS_MORE_DATA(igsd, 1)) {
+					zend_error(E_WARNING, "igbinary_unserialize_long: end-of-data");
+					goto cleanup;
+				}
+
+				key_index = igbinary_unserialize8(igsd);
+				break;
 			case igbinary_type_long16p:
+				/* and for array keys from 0 to 65535. */
+				if (IGB_NEEDS_MORE_DATA(igsd, 2)) {
+					zend_error(E_WARNING, "igbinary_unserialize_long: end-of-data");
+					goto cleanup;
+				}
+
+				key_index = igbinary_unserialize16(igsd);
+				break;
+			case igbinary_type_long8n:
 			case igbinary_type_long16n:
 			case igbinary_type_long32p:
 			case igbinary_type_long32n:
 			case igbinary_type_long64p:
 			case igbinary_type_long64n:
-				if (igbinary_unserialize_long(igsd, key_type, &key_index)) {
-					zval_dtor(z);
-					ZVAL_UNDEF(z);
-					return 1;
+				if (UNEXPECTED(igbinary_unserialize_long(igsd, key_type, &key_index))) {
+					goto cleanup;
 				}
 				break;
 			case igbinary_type_string_id8:
 			case igbinary_type_string_id16:
 			case igbinary_type_string_id32:
 				key_str = igbinary_unserialize_string(igsd, key_type);
-				if (key_str == NULL) {
-					zval_dtor(z);
-					ZVAL_UNDEF(z);
-					return 1;
+				if (UNEXPECTED(key_str == NULL)) {
+					goto cleanup;
 				}
 				break;
 			case igbinary_type_string8:
 			case igbinary_type_string16:
 			case igbinary_type_string32:
 				key_str = igbinary_unserialize_chararray(igsd, key_type);
-				if (key_str == NULL) {
-					zval_dtor(z);
-					ZVAL_UNDEF(z);
-					return 1;
+				if (UNEXPECTED(key_str == NULL)) {
+					goto cleanup;
 				}
 				break;
 			case igbinary_type_string_empty:
@@ -2348,9 +2356,7 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 				continue;
 			default:
 				zend_error(E_WARNING, "igbinary_unserialize_array: unknown key type '%02x', position %zu", key_type, (size_t)IGB_BUFFER_OFFSET(igsd));
-				zval_dtor(z);
-				ZVAL_UNDEF(z);
-				return 1;
+				goto cleanup;
 		}
 
 		/* first add key into array so references can properly and not stack allocated zvals */
@@ -3039,8 +3045,24 @@ static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zva
 			ZVAL_STR(z, tmp_str);
 			break;
 		case igbinary_type_long8p:
-		case igbinary_type_long8n:
+			/* Manually inline igbinary_unserialize_long() for values from 0 to 255, because they're the most common among integers in many applications. */
+			if (IGB_NEEDS_MORE_DATA(igsd, 1)) {
+				zend_error(E_WARNING, "igbinary_unserialize_long: end-of-data");
+				return 1;
+			}
+
+			ZVAL_LONG(z, igbinary_unserialize8(igsd));
+			break;
 		case igbinary_type_long16p:
+			/* Manually inline igbinary_unserialize_long() for values from 0 to 255, because they're the most common among integers in many applications. */
+			if (IGB_NEEDS_MORE_DATA(igsd, 2)) {
+				zend_error(E_WARNING, "igbinary_unserialize_long: end-of-data");
+				return 1;
+			}
+
+			ZVAL_LONG(z, igbinary_unserialize16(igsd));
+			break;
+		case igbinary_type_long8n:
 		case igbinary_type_long16n:
 		case igbinary_type_long32p:
 		case igbinary_type_long32n:
