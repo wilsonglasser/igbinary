@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2020-01-16</date>
+ <date>2020-01-21</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.1</release>
+  <release>3.1.2</release>
   <api>1.2.3</api>
  </version>
  <stability>
@@ -43,8 +43,9 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix bug causing incorrect serialization for 1 in 2**32 strings on 64-bit php installations when string hashes collide.
-  (https://github.com/igbinary/igbinary/issues/260)
+* Speed up object, array, reference, and string serialization.
+* Speed up unserializing integers between 0 and 65535 (as values and array keys).
+* Speed up unserializing objects with declared properties.
  </notes>
  <contents>
   <dir name="/">
@@ -199,6 +200,23 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2020-01-16</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.1</release>
+    <api>1.2.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Fix bug causing incorrect serialization for 1 in 2**32 strings on 64-bit php installations when string hashes collide.
+  (https://github.com/igbinary/igbinary/issues/260)
+   </notes>
+  </release>
   <release>
    <date>2020-01-11</date>
    <time>16:00:00</time>
