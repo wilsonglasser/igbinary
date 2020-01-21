@@ -2521,7 +2521,6 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 		if (prototype_value != NULL) {
 			zval orig_zval_data;
 			if (Z_TYPE_P(prototype_value) == IS_INDIRECT) {
-				zval orig_zval_data;
 				/* This is a declared object property */
 				prototype_value = Z_INDIRECT_P(prototype_value);
 #if PHP_VERSION_ID >= 70400
