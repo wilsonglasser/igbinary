@@ -1767,19 +1767,21 @@ inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd
 /** Serialize zval. */
 static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z) {
 	if (Z_ISREF_P(z)) {
-		RETURN_1_IF_NON_ZERO(igbinary_serialize8(igsd, (uint8_t)igbinary_type_ref))
+		if (Z_REFCOUNT_P(z) >= 2) {
+			RETURN_1_IF_NON_ZERO(igbinary_serialize8(igsd, (uint8_t)igbinary_type_ref))
 
-		switch (Z_TYPE_P(Z_REFVAL_P(z))) {
-		case IS_ARRAY:
-			return igbinary_serialize_array(igsd, z, false, false, true);
-		case IS_OBJECT:
-			break; /* Fall through */
-		default:
-			/* Serialize a reference if zval already added */
-			if (igbinary_serialize_array_ref(igsd, z, false) == 0) {
-				return 0;
+			switch (Z_TYPE_P(Z_REFVAL_P(z))) {
+			case IS_ARRAY:
+				return igbinary_serialize_array(igsd, z, false, false, true);
+			case IS_OBJECT:
+				break; /* Fall through */
+			default:
+				/* Serialize a reference if zval already added */
+				if (igbinary_serialize_array_ref(igsd, z, false) == 0) {
+					return 0;
+				}
+				/* Fall through */
 			}
-			/* Fall through */
 		}
 
 		ZVAL_DEREF(z);
