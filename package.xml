@@ -34,7 +34,7 @@
  <date>2020-01-21</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.2</release>
+  <release>3.1.3dev</release>
   <api>1.2.3</api>
  </version>
  <stability>
@@ -43,9 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Speed up object, array, reference, and string serialization.
-* Speed up unserializing integers between 0 and 65535 (as values and array keys).
-* Speed up unserializing objects with declared properties.
+* Properly serialize reference groups of size 1 (these can be created by array_walk_recursive and other functions)
  </notes>
  <contents>
   <dir name="/">
@@ -181,6 +179,7 @@
     <file name="igbinary_078.phpt" role="test" />
     <file name="igbinary_079.phpt" role="test" />
     <file name="igbinary_080.phpt" role="test" />
+    <file name="igbinary_081.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
@@ -200,6 +199,24 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2020-01-21</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.2</release>
+    <api>1.2.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Speed up object, array, reference, and string serialization.
+* Speed up unserializing integers between 0 and 65535 (as values and array keys).
+* Speed up unserializing objects with declared properties.
+   </notes>
+  </release>
   <release>
    <date>2020-01-16</date>
    <time>16:00:00</time>
