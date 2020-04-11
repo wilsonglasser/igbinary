@@ -3,7 +3,6 @@ __serialize() mechanism (015): Uninitialized properties from __sleep should thro
 --SKIPIF--
 <?php
 if (PHP_VERSION_ID < 70400) { echo "skip __serialize/__unserialize not supported in php < 7.4 for compatibility with igbinary_serialize()"; }
-if (PHP_VERSION_ID >= 80000) { echo "skip different error message format"; }
 ?>
 --FILE--
 <?php
