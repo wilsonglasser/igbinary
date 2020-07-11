@@ -542,7 +542,7 @@ static int igbinary_finish_deferred_calls(struct igbinary_unserialize_data *igsd
 				zval retval; /* return value of __wakeup */
 				zval rval;
 				ZVAL_OBJ(&rval, obj);
-				if (UNEXPECTED(call_user_function_ex(CG(function_table), &rval, &wakeup_name, &retval, 0, 0, 1, NULL) == FAILURE || Z_ISUNDEF(retval))) {
+				if (UNEXPECTED(call_user_function(CG(function_table), &rval, &wakeup_name, &retval, 0, 0) == FAILURE || Z_ISUNDEF(retval))) {
 					delayed_call_failed = 1;
 					GC_ADD_FLAGS(obj, IS_OBJ_DESTRUCTOR_CALLED);
 				}
@@ -1727,7 +1727,7 @@ inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd
 
 		ZVAL_UNDEF(&h);
 		/* calling z->__sleep */
-		r = call_user_function_ex(CG(function_table), z, &f, &h, 0, 0, 1, NULL);
+		r = call_user_function(CG(function_table), z, &f, &h, 0, 0);
 
 		zval_dtor(&f);
 
@@ -2693,7 +2693,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 		/* FIXME: Release arg[0] */
 		/* FIXME: Release class_name */
 		ZVAL_STR_COPY(&args[0], class_name);
-		if (call_user_function_ex(CG(function_table), NULL, &user_func, &retval, 1, args, 0, NULL) != SUCCESS) {
+		if (call_user_function(CG(function_table), NULL, &user_func, &retval, 1, args) != SUCCESS) {
 			php_error_docref(NULL, E_WARNING, "defined (%s) but not found", ZSTR_VAL(class_name));
 			incomplete_class = 1;
 			ce = PHP_IC_ENTRY;
