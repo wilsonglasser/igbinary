@@ -1,7 +1,8 @@
 language: php
 
+# nightly is more up to date than master
 php:
-  - master
+  - nightly
   - 7.4
   - 7.3
   - 7.2
