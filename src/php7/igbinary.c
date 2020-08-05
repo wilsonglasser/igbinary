@@ -2644,7 +2644,7 @@ inline static int igbinary_unserialize_object_ser(struct igbinary_unserialize_da
 /** Unserialize an object.
  * @see ext/standard/var_unserializer.c in the php-src repo. Parts of this code are based on that.
  */
-inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, int flags) {
+inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *z, int flags) {
 	zend_class_entry *ce;
 
 	size_t ref_n;
@@ -2770,6 +2770,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 					int result;
 					zend_string_release(class_name);
 					result = igbinary_unserialize_array(igsd, t, &param, 0, false);
+					ZVAL_DEREF(z);
 					ZEND_ASSERT(Z_TYPE_P(z) == IS_OBJECT);
 					igsd_defer_unserialize(igsd, Z_OBJ_P(z), param);
 					return result;
