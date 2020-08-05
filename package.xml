@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2020-08-04</date>
+ <date>2020-08-05</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.3</release>
+  <release>3.1.4</release>
   <api>1.2.3</api>
  </version>
  <stability>
@@ -43,9 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Properly serialize reference groups of size 1 (these can be created by array_walk_recursive and other functions).
-  Note that this does not fix the general case where values not being serialized are in the same reference group as a value being serialized.
-* PHP 8.0 compatibility fixes.
+* Fix unserialization of PHP references to internal/user-defined classes using PHP 7.4's `__unserialize` (e.g. `ArrayObject`)
  </notes>
  <contents>
   <dir name="/">
@@ -93,6 +91,7 @@
     <file name="__serialize_016_php8.phpt" role="test" />
     <file name="__serialize_017.phpt" role="test" />
     <file name="__serialize_018.phpt" role="test" />
+    <file name="__serialize_019.phpt" role="test" />
     <file name="igbinary_001.phpt" role="test" />
     <file name="igbinary_002.phpt" role="test" />
     <file name="igbinary_003.phpt" role="test" />
@@ -181,6 +180,8 @@
     <file name="igbinary_079.phpt" role="test" />
     <file name="igbinary_080.phpt" role="test" />
     <file name="igbinary_081.phpt" role="test" />
+    <file name="igbinary_082.phpt" role="test" />
+    <file name="igbinary_082_php74.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
@@ -200,6 +201,24 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2020-08-04</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.3</release>
+    <api>1.2.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Properly serialize reference groups of size 1 (these can be created by array_walk_recursive and other functions).
+  Note that this does not fix the general case where values not being serialized are in the same reference group as a value being serialized.
+* PHP 8.0 compatibility fixes.
+   </notes>
+  </release>
   <release>
    <date>2020-01-21</date>
    <time>16:00:00</time>
