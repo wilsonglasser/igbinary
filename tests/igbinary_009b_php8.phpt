@@ -1,12 +1,12 @@
 --TEST--
-Check for reference serialization (Original example, not using var_dump)
+Check for reference serialization in php 8 (Original example, not using var_dump)
 --SKIPIF--
 <?php
 if (!extension_loaded('igbinary')) {
 	echo "skip no igbinary";
 }
-if (PHP_MAJOR_VERSION > 7) {
-	echo "skip requires php 7.x\n";
+if (PHP_MAJOR_VERSION < 8) {
+	echo "skip requires php 8.0+\n";
 }
 --INI--
 pcre.jit=0
@@ -63,6 +63,52 @@ test_cyclic2('cyclic $a = array(array(&$a)); $a[0] - testing functionality', $a[
 cyclic $a = array(&array(&$a)) - testing functionality
 1401060025140106002514010600250101
 OK
+But var dump differs:
+Actual:
+array(1) {
+  [0]=>
+  &array(1) {
+    [0]=>
+    array(1) {
+      [0]=>
+      *RECURSION*
+    }
+  }
+}
+
+Expected
+array(1) {
+  [0]=>
+  &array(1) {
+    [0]=>
+    *RECURSION*
+  }
+}
+
+(Was normalized)
 cyclic $a = array(array(&$a)); $a[0] - testing functionality
 14010600251401060014010600250101
 OK
+But var dump differs:
+Actual:
+array(1) {
+  [0]=>
+  &array(1) {
+    [0]=>
+    array(1) {
+      [0]=>
+      *RECURSION*
+    }
+  }
+}
+
+Expected
+array(1) {
+  [0]=>
+  &array(1) {
+    [0]=>
+    *RECURSION*
+  }
+}
+
+(Was normalized)

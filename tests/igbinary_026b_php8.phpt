@@ -5,10 +5,10 @@ report_memleaks=0
 --SKIPIF--
 <?php
 if (!extension_loaded('igbinary')) {
-	echo "skip no igbinary";
+	echo "skip no igbinary\n";
 }
-if (PHP_MAJOR_VERSION > 7) {
-	echo "skip requires php 7.x\n";
+if (PHP_MAJOR_VERSION < 8) {
+	echo "skip requires php 8\n";
 }
 --FILE--
 <?php
@@ -20,6 +20,8 @@ $b = array(1, 2, $a);
  * unserialize/serialize produces different output (5.2.16). I consider this is
  * a PHP bug. - Oleg Grenrus
  */
+
+/* NOTE: This is different in php 8 because igbinary_unserialize() is declared to return a reference, not a value */
 
 //$k = $a;
 //$k = unserialize(serialize($a));
@@ -51,5 +53,34 @@ check($a, $k);
 
 ?>
 --EXPECT--
-OK
+Output differs
+Expected:
+array(1) {
+  ["foo"]=>
+  &array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    [2]=>
+    *RECURSION*
+  }
+}
+
+Actual:
+array(1) {
+  ["foo"]=>
+  &array(3) {
+    [0]=>
+    int(1)
+    [1]=>
+    int(2)
+    [2]=>
+    array(1) {
+      ["foo"]=>
+      *RECURSION*
+    }
+  }
+}
+
 OK
