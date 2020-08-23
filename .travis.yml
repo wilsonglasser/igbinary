@@ -13,7 +13,6 @@ dist: xenial
 
 matrix:
   allow_failures:
-  - php: nightly
   # Allow valgrind+7.4 to fail due to false positive leaks reported by valgrind in zend_string_equals (implementation uses custom assembly).
   - php: 7.4
     env: CC=gcc CFLAGS=""
@@ -47,13 +46,13 @@ matrix:
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
   - php: 7.4
     env: CC=clang   CFLAGS="-g -O0"
-  - php: master
+  - php: nightly
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
-  - php: master
+  - php: nightly
     env: CC=clang   CFLAGS="-g -O0"
-  - php: master
+  - php: nightly
     env: CC=gcc CFLAGS=""
-  - php: master
+  - php: nightly
     env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
 
 cache:

@@ -34,7 +34,7 @@
  <date>2020-08-05</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.4</release>
+  <release>3.1.5dev</release>
   <api>1.2.3</api>
  </version>
  <stability>
@@ -43,7 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix unserialization of PHP references to internal/user-defined classes using PHP 7.4's `__unserialize` (e.g. `ArrayObject`)
+* Update unit test expectation to match behavior in php 8 due to changes in php's handling of cyclic references in arrays.
  </notes>
  <contents>
   <dir name="/">
@@ -102,6 +102,7 @@
     <file name="igbinary_008.phpt" role="test" />
     <file name="igbinary_009.phpt" role="test" />
     <file name="igbinary_009b.phpt" role="test" />
+    <file name="igbinary_009b_php8.phpt" role="test" />
     <file name="igbinary_010.phpt" role="test" />
     <file name="igbinary_012.phpt" role="test" />
     <file name="igbinary_013.phpt" role="test" />
@@ -121,7 +122,9 @@
     <file name="igbinary_025.phpt" role="test" />
     <file name="igbinary_025b.phpt" role="test" />
     <file name="igbinary_026.phpt" role="test" />
+    <file name="igbinary_026_php8.phpt" role="test" />
     <file name="igbinary_026b.phpt" role="test" />
+    <file name="igbinary_026b_php8.phpt" role="test" />
     <file name="igbinary_027.phpt" role="test" />
     <file name="igbinary_028.phpt" role="test" />
     <file name="igbinary_029.phpt" role="test" />
@@ -201,6 +204,22 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2020-08-05</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.1.4</release>
+    <api>1.2.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Fix unserialization of PHP references to internal/user-defined classes using PHP 7.4's `__unserialize` (e.g. `ArrayObject`)
+   </notes>
+  </release>
   <release>
    <date>2020-08-04</date>
    <time>16:00:00</time>

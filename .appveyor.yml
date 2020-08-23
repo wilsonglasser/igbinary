@@ -86,13 +86,24 @@ environment:
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
                   ARCH: x64
                   VC: vc15
-                  PHP_VER: 7.4.8
+                  PHP_VER: 7.4.9
                   TS: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
                   ARCH: x86
                   VC: vc15
-                  PHP_VER: 7.4.8
+                  PHP_VER: 7.4.9
                   TS: 0
+                # https://windows.php.net/download/ has no release for 8.0. but this is what I'd assume the versions would be.
+                # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                #   ARCH: x86
+                #   VC: vc16
+                #   PHP_VER: 8.0.0beta2
+                #   TS: 1
+                # - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                #   ARCH: x64
+                #   VC: vc16
+                #   PHP_VER: 8.0.0beta2
+                #   TS: 0
 
 build_script:
         ps: |
