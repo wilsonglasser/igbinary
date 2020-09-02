@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2020-08-05</date>
+ <date>2020-09-02</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.5dev</release>
+  <release>3.1.5</release>
   <api>1.2.3</api>
  </version>
  <stability>
@@ -44,6 +44,7 @@
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
 * Update unit test expectation to match behavior in php 8 due to changes in php's handling of cyclic references in arrays.
+* Support API changes in php 8.0.0beta3.
  </notes>
  <contents>
   <dir name="/">
