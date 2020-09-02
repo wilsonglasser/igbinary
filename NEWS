@@ -1,3 +1,9 @@
+3.1.5 2020-09-02
+=======
+
+* Update unit test expectation to match behavior in php 8 due to changes in php's handling of cyclic references in arrays.
+* Support API changes in php 8.0.0beta3.
+
 3.1.4 2020-07-05
 =======
 
