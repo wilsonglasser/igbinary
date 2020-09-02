@@ -2751,7 +2751,11 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 				break;
 			}
 			if (incomplete_class) {
+#if PHP_VERSION_ID >= 80000
+				php_store_class_name(z, class_name);
+#else
 				php_store_class_name(z, ZSTR_VAL(class_name), ZSTR_LEN(class_name));
+#endif
 #if PHP_VERSION_ID >= 70400
 			} else {
 				if (zend_hash_str_exists(&ce->function_table, "__unserialize", sizeof("__unserialize") - 1)) {
@@ -2802,7 +2806,11 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 			}
 
 			if (incomplete_class) {
+#if PHP_VERSION_ID >= 80000
+				php_store_class_name(z, class_name);
+#else
 				php_store_class_name(z, ZSTR_VAL(class_name), ZSTR_LEN(class_name));
+#endif
 			}
 			struct igbinary_value_ref *ref = &IGB_REF_VAL_2(igsd, ref_n);
 			if ((flags & WANT_REF) != 0) {
