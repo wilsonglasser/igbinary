@@ -1,9 +1,8 @@
 language: php
 
-# 8.0snapshot is more up to date than master or nightly
 # Available versions can be seen at https://github.com/php-build/php-build/tree/master/share/php-build/definitions
 php:
-  - 8.0snapshot
+  - nightly
   - 7.4
   - 7.3
   - 7.2
@@ -17,7 +16,7 @@ matrix:
   # Allow valgrind+7.4 to fail due to false positive leaks reported by valgrind in zend_string_equals (implementation uses custom assembly).
   - php: 7.4
     env: CC=gcc CFLAGS=""
-  - php: 8.0snapshot
+  - php: nightly
   exclude:
   - php: 7.0
     env: CC=clang   CFLAGS="-g -O0"
@@ -48,13 +47,13 @@ matrix:
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
   - php: 7.4
     env: CC=clang   CFLAGS="-g -O0"
-  - php: 8.0snapshot
+  - php: nightly
     env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
-  - php: 8.0snapshot
+  - php: nightly
     env: CC=clang   CFLAGS="-g -O0"
-  - php: 8.0snapshot
+  - php: nightly
     env: CC=gcc CFLAGS=""
-  - php: 8.0snapshot
+  - php: nightly
     env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
 
 cache:
