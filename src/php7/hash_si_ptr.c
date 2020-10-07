@@ -9,11 +9,7 @@
   +----------------------------------------------------------------------+
 */
 
-#ifdef PHP_WIN32
-# include "win32/php_stdint.h"
-#else
-# include <stdint.h>
-#endif
+#include <stdint.h>
 
 #include <stdio.h>
 #include <stdlib.h>
