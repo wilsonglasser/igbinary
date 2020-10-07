@@ -144,6 +144,10 @@ struct igbinary_serialize_data {
 	int references_id;             /**< Number of things that the unserializer might think are references. >= length of references */
 	int string_count;              /**< Serialized string count, used for back referencing */
 	struct igbinary_memory_manager mm; /**< Memory management functions. */
+
+	zval *deferred_dtor;           /**< refcounted objects and arrays to call dtor on after unserializing. See i_zval_ptr_dtor */
+	size_t deferred_dtor_count;    /**< count of refcounted in array for calls to dtor */
+	size_t deferred_dtor_capacity; /**< capacity of refcounted in array for calls to dtor */
 };
 
 /*
@@ -561,6 +565,41 @@ static int igbinary_finish_deferred_calls(struct igbinary_unserialize_data *igsd
 /* }}} */
 /* }}} */
 
+/* {{{ igsd_ensure_deferred_dtor_capacity(struct igbinary_serialize_data *igsd) */
+static inline int igsd_ensure_deferred_dtor_capacity(struct igbinary_serialize_data *igsd) {
+	if (igsd->deferred_dtor_count >= igsd->deferred_dtor_capacity) {
+		if (igsd->deferred_dtor_capacity == 0) {
+			igsd->deferred_dtor_capacity = 2;
+			igsd->deferred_dtor = emalloc(sizeof(igsd->deferred_dtor[0]) * igsd->deferred_dtor_capacity);
+		} else {
+			igsd->deferred_dtor_capacity *= 2;
+			zval *old_deferred_dtor = igsd->deferred_dtor;
+			igsd->deferred_dtor = erealloc(old_deferred_dtor, sizeof(igsd->deferred_dtor[0]) * igsd->deferred_dtor_capacity);
+			if (UNEXPECTED(igsd->deferred_dtor == NULL)) {
+				igsd->deferred_dtor = old_deferred_dtor;
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+/* }}} */
+
+/* {{{ igsd_addref_and_defer_dtor(struct igbinary_serialize_data *igsd, zval *z) */
+static inline int igsd_addref_and_defer_dtor(struct igbinary_serialize_data *igsd, zval *z) {
+	if (!Z_REFCOUNTED_P(z)) {
+		return 0;
+	}
+	if (igsd_ensure_deferred_dtor_capacity(igsd)) {
+		return 1;
+	}
+
+	ZEND_ASSERT(Z_REFCOUNT_P(z) >= 1);  /* Expect that there were references at the time this was serialized */
+	ZVAL_COPY(&igsd->deferred_dtor[igsd->deferred_dtor_count++], z);
+	return 0;
+}
+/* }}} */
+
 /* {{{ Memory allocator wrappers */
 static inline void *igbinary_mm_wrapper_malloc(size_t size, void *context)
 {
@@ -919,12 +958,17 @@ inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *i
 
 	igsd->compact_strings = (bool)IGBINARY_G(compact_strings);
 
+	igsd->deferred_dtor = NULL;
+	igsd->deferred_dtor_count = 0;
+	igsd->deferred_dtor_capacity = 0;
+
 	return r;
 }
 /* }}} */
 /* {{{ igbinary_serialize_data_deinit */
 /** Deinits igbinary_serialize_data, freeing the allocated data structures. */
 inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data *igsd, int free_buffer) {
+	zval *const deferred_dtor = igsd->deferred_dtor;
 	if (free_buffer && igsd->buffer) {
 		igsd->mm.free(igsd->buffer, igsd->mm.context);
 	}
@@ -932,6 +976,14 @@ inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data
 	if (!igsd->scalar) {
 		hash_si_deinit(&igsd->strings);
 		hash_si_ptr_deinit(&igsd->references);
+	}
+
+	if (deferred_dtor) {
+		const size_t n = igsd->deferred_dtor_count;
+		for (size_t i = 0; i < n; i++) {
+			zval_ptr_dtor(&deferred_dtor[i]);
+		}
+		efree(deferred_dtor);
 	}
 }
 /* }}} */
@@ -1271,7 +1323,7 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 /* }}} */
 /* {{{ igbinary_serialize_array_ref */
 /** Serializes array reference (or reference in an object). Returns 0 on success. */
-inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *igsd, zval *z, bool object) {
+inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *igsd, zval * const z, bool object) {
 	size_t t;
 	zend_uintptr_t key;  /* The address of the pointer to the zend_refcounted struct or other struct */
 	static int INVALID_KEY;  /* Not used, but we take the pointer of this knowing other zvals won't share it*/
@@ -1316,6 +1368,8 @@ inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *i
 	if (t == SIZE_MAX) {
 		/* This is a brand new object/array/reference entry with a key equal to igsd->references_id */
 		igsd->references_id++;
+		/* We only need to call this if the array/object is new, in case __serialize or other methods return temporary arrays or modify arrays that were serialized earlier */
+		igsd_addref_and_defer_dtor(igsd, z);
 		return 1;
 	}
 

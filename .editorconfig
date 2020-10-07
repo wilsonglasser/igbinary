@@ -6,3 +6,6 @@ indent_style = tab
 indent_size = 4
 [*.phpt]
 indent_style = space
+[*.xml]
+indent_size = 1
+indent_style = space
