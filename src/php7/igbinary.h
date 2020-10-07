@@ -9,11 +9,7 @@
 
 #ifndef IGBINARY_H
 #define IGBINARY_H
-#ifdef PHP_WIN32
-# include "win32/php_stdint.h"
-#else
-# include <stdint.h>
-#endif
+#include <stdint.h>
 
 /* Forward declarations. */
 struct zval;
