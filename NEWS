@@ -1,3 +1,8 @@
+3.1.6RC1 2020-10-07
+=======
+
+* Fix igbinary_serialize incorrectly deduplicating arrays/objects/references when they were garbage collected/freed during serialization.
+
 3.1.5 2020-09-02
 =======
 
