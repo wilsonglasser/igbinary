@@ -980,7 +980,8 @@ inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data
 
 	if (deferred_dtor) {
 		const size_t n = igsd->deferred_dtor_count;
-		for (size_t i = 0; i < n; i++) {
+		size_t i;
+		for (i = 0; i < n; i++) {
 			zval_ptr_dtor(&deferred_dtor[i]);
 		}
 		efree(deferred_dtor);
