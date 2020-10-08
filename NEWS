@@ -1,3 +1,9 @@
+3.1.6 2020-10-08
+=======
+
+* Fix build failure with older C standard (e.g. building on CentOS 6).
+* Otherwise, identical to 3.1.6RC1.
+
 3.1.6RC1 2020-10-07
 =======
 
