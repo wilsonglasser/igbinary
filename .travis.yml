@@ -1,68 +1,78 @@
 language: php
 
-# Available versions can be seen at https://github.com/php-build/php-build/tree/master/share/php-build/definitions
-php:
-  - nightly
-  - 7.4
-  - 7.3
-  - 7.2
-  - 7.1
-  - 7.0
-
-dist: xenial
-
+# Available php versions can be seen at https://github.com/php-build/php-build/tree/master/share/php-build/definitions
+# NOTE: Older OS versions have older valgrind versions and report false positives for zend_string_equals in php 7.3+
+# due to the use of inline assembly in php-src.
 matrix:
-  allow_failures:
-  # Allow valgrind+7.4 to fail due to false positive leaks reported by valgrind in zend_string_equals (implementation uses custom assembly).
-  - php: 7.4
-    env: CC=gcc CFLAGS=""
-  exclude:
-  - php: 7.0
-    env: CC=clang   CFLAGS="-g -O0"
-  - php: 7.1
-    env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
-  - php: 7.1
+  include:
+  - php: nightly
+    env: CC=gcc CFLAGS="" SKIP_VALGRIND=1
+    dist: focal
+  - php: nightly
     env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+    dist: focal
+  # valgrind reports "WARNING: unhandled x86-linux syscall: 403"
+  - php: nightly
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json' SKIP_VALGRIND=1
+    dist: focal
+
+  - php: 7.4
+    env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+    dist: focal
+  - php: 7.4
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json' SKIP_VALGRIND=1
+    dist: focal
+
+  - php: 7.4
+    env: CC=gcc CXX=g++ PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
+    dist: focal
+
+  - php: 7.3
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
+    dist: xenial
+
   - php: 7.2
-    env: CC=clang   CFLAGS="-g -O0"
+    env: CC=clang CFLAGS="-O3" SKIP_VALGRIND=1
+    dist: xenial
+  - php: 7.2
+    env: CC=clang CFLAGS=""
+    dist: xenial
+  - php: 7.2
+    env: CC=gcc CFLAGS=""
+    dist: xenial
+  - php: 7.2
+    env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+    dist: xenial
   - php: 7.2
     env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
-    # Note: The version of clang bundled with Ubuntu Trusty can't compile PHP 7.3
-    # ("'asm goto' constructs are not supported yet")
-    # and PHP 7.3 doesn't yet work in Ubuntu Xenial (https://github.com/travis-ci/travis-ci/issues/9717#issuecomment-429564626).
-    # Skip those builds because of that.
-  - php: 7.3
-    env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
-  - php: 7.3
-    env: CC=clang   CFLAGS="-g -O0"
-  - php: 7.3
+    dist: xenial
+
+  - php: 7.1
+    env: CC=clang CFLAGS="-g -O0"
+    dist: xenial
+  - php: 7.1
+    env: CC=gcc CFLAGS=""
+    dist: xenial
+  - php: 7.1
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
+    dist: xenial
+
+  - php: 7.0
+    env: CC=clang CFLAGS="-O3" SKIP_VALGRIND=1
+    dist: xenial
+  - php: 7.0
+    env: CC=gcc CFLAGS=""
+    dist: xenial
+  - php: 7.0
     env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
-    # For some reason, the below build job results in code that causes leak checks to fail,
-    # even in tests that don't invoke igbinary (e.g. `LEAK Check for igbinary presence [tests/igbinary_001.phpt]`)
-  - php: 7.3
-    env: CC=gcc CFLAGS=""
-  # Exclude clang: since php was compiled with gcc, HAVE_ASM_GOTO is defined, but clang doesn't support asm goto.
-  - php: 7.4
-    env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
-  - php: 7.4
-    env: CC=clang   CFLAGS="-g -O0"
-  - php: nightly
-    env: CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
-  - php: nightly
-    env: CC=clang   CFLAGS="-g -O0"
-  - php: nightly
-    env: CC=gcc CFLAGS=""
+    dist: xenial
+  - php: 7.0
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
+    dist: xenial
 
 cache:
   directories:
     - $HOME/travis_cache
-
-env:
-  - CC=clang   CFLAGS="-O3" SKIP_VALGRIND=1
-  - CC=clang   CFLAGS="-g -O0"
-  - CC=gcc CFLAGS=""
-  - CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
-  - CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json'
 
 install:
   - sudo apt-get update -qq
