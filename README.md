@@ -127,7 +127,7 @@ Bugs & Contributions
 --------------------
 
 Mailing list for bug reports and other development discussion can be found
-at http://groups.google.com/group/igbinary
+at http://groups.google.com/group/igbinary (no longer used)
 
 File bug reports at
 https://github.com/igbinary/igbinary/issues
@@ -136,6 +136,8 @@ The preferred way to contribute is with pull requests.
 Feel free to fork this at http://github.com/igbinary/igbinary
 
 See [TESTING.md](./TESTING.md) for advice for testing patches.
+
+See [TECH\_NOTES.md](./TECH_NOTES.md) for information about how igbinary is implemented
 
 Utilizing in other extensions
 -----------------------------
