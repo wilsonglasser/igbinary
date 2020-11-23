@@ -22,7 +22,15 @@ test('resource', $res, false);
 
 fclose($res);
 
---EXPECT--
+test('resource', $res, false);
+
+--EXPECTF--
+Deprecated: igbinary_serialize(): Cannot serialize resource(stream) and resources may be converted to objects that cannot be serialized in future php releases. Serializing the value as null instead in %sigbinary_023.php on line 4
+resource
+00
+OK
+
+Deprecated: igbinary_serialize(): Cannot serialize resource(Unknown) and resources may be converted to objects that cannot be serialized in future php releases. Serializing the value as null instead in %sigbinary_023.php on line 4
 resource
 00
 OK

@@ -1,4 +1,4 @@
-3.1.7dev 202?-??-??
+3.2.0dev 202?-??-??
 =======
 
 * Use PHP's shared empty array instance when unserializing empty arrays in php 7.3+.

@@ -44,6 +44,9 @@
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
 * Improve memory efficiency when unserializing packed arrays (e.g. lists) - certain checks are no longer needed.
+* Emit a deprecation notice when serializing resources.
+  PHP itself is converting many resources to objects that throw an Error on serialization attempts.
+  Continue to represent resources as null in the serialized data.
  </notes>
  <contents>
   <dir name="/">

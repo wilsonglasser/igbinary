@@ -1818,6 +1818,17 @@ inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd
 	}
 }
 /* }}} */
+/* {{{ igbinary_warn_serialize_resource */
+static ZEND_COLD int igbinary_warn_serialize_resource(zval *z) {
+	const char *resource_type;
+	resource_type = zend_rsrc_list_get_rsrc_type(Z_RES_P(z));
+	if (!resource_type) {
+		resource_type = "Unknown";
+	}
+	php_error_docref(NULL, E_DEPRECATED, "Cannot serialize resource(%s) and resources may be converted to objects that cannot be serialized in future php releases. Serializing the value as null instead", resource_type);
+	return EG(exception) != NULL;
+}
+/* }}} */
 /* {{{ igbinary_serialize_zval */
 /** Serialize zval. */
 static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z) {
@@ -1843,6 +1854,9 @@ static int igbinary_serialize_zval(struct igbinary_serialize_data *igsd, zval *z
 	}
 	switch (Z_TYPE_P(z)) {
 		case IS_RESOURCE:
+			if (igbinary_warn_serialize_resource(z)) {
+				return 1;
+			}
 			return igbinary_serialize_null(igsd);
 		case IS_OBJECT:
 			return igbinary_serialize_object(igsd, z);
