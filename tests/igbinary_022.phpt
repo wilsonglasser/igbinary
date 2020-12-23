@@ -1,7 +1,7 @@
 --TEST--
 Object test, unserialize_callback_func
---SKIPIF--
 --INI--
+error_reporting=E_ALL
 unserialize_callback_func=autoload
 --FILE--
 <?php
@@ -20,18 +20,24 @@ function test($type, $variable, $test) {
 }
 
 function autoload($classname) {
-	class Obj {
-		var $a;
-		var $b;
+	echo "Autoloading $classname\n";
+	if (!class_exists(Obj::class)) {
+		class Obj {
+			var $a;
+			var $b;
 
-		function __construct($a, $b) {
-			$this->a = $a;
-			$this->b = $b;
+			function __construct($a, $b) {
+				$this->a = $a;
+				$this->b = $b;
+			}
 		}
 	}
 }
 
 test('autoload', '0000000217034f626a140211016106011101620602', false);
+test('autoload', '0000000217034f626b140211016106011101620602', false);
+ini_set('unserialize_callback_func', strtolower('Missing_autoload'));
+test('missing_autoload', '0000000217034f626c140211016106011101620602', false);
 
 /*
  * you can add regression tests for your extension here
@@ -45,7 +51,23 @@ test('autoload', '0000000217034f626a140211016106011101620602', false);
  * writing regression tests
  */
 ?>
---EXPECT--
+--EXPECTF--
+Autoloading Obj
 autoload
 17034f626a140211016106011101620602
 OK
+Autoloading Obk
+
+%s: igbinary_unserialize(): Function autoload() hasn't defined the class it was called for in %sigbinary_022.php on line 8
+autoload
+17034f626b140211016106011101620602
+
+%s: test(): %s to load the class definition %Sin %sigbinary_022.php on line 12
+ERROR
+
+%s: igbinary_unserialize(): defined (missing_autoload) but not found in %sigbinary_022.php on line 8
+missing_autoload
+17034f626c140211016106011101620602
+
+%s: test(): %s to load the class definition %Sin %sigbinary_022.php on line 12
+ERROR
