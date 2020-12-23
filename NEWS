@@ -1,10 +1,11 @@
 3.2.0dev 202?-??-??
 =======
 
-* Use PHP's shared empty array instance when unserializing empty arrays in php 7.3+.
-  (helps slightly with memory usage when repeatedly unserializing,
-  when removing elements from arrays before unserializing them,
-  or when serializing values including an empty array that was unserialized)
+* Improve memory efficiency when unserializing packed arrays (e.g. lists) - certain checks are no longer needed.
+* Emit a deprecation notice when serializing resources.
+  PHP itself is converting many resources to objects that throw an Error on serialization attempts.
+  Continue to represent resources as null in the serialized data.
+* Fix memory management bug when unserializing invalid data (duplicate properties in objects (e.g. from `__sleep`) or duplicate fields in arrays (impossible for valid data)).
 
 3.1.6 2020-10-08
 =======

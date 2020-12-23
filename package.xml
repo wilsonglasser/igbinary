@@ -34,7 +34,7 @@
  <date>2020-10-08</date>
  <time>16:00:00</time>
  <version>
-  <release>3.1.7dev</release>
+  <release>3.2.0dev</release>
   <api>1.2.5</api>
  </version>
  <stability>
@@ -47,6 +47,7 @@
 * Emit a deprecation notice when serializing resources.
   PHP itself is converting many resources to objects that throw an Error on serialization attempts.
   Continue to represent resources as null in the serialized data.
+* Fix memory management bug when unserializing invalid data (duplicate properties in objects (e.g. from `__sleep`) or duplicate fields in arrays (impossible for valid data)).
  </notes>
  <contents>
   <dir name="/">
@@ -191,6 +192,10 @@
     <file name="igbinary_081.phpt" role="test" />
     <file name="igbinary_082.phpt" role="test" />
     <file name="igbinary_082_php74.phpt" role="test" />
+    <file name="igbinary_083.phpt" role="test" />
+    <file name="igbinary_084.phpt" role="test" />
+    <file name="igbinary_084b.phpt" role="test" />
+    <file name="igbinary_085.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />

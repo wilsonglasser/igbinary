@@ -130,6 +130,13 @@ enum igbinary_type {
 	/* 25 */ igbinary_type_ref,				/**< Simple reference */
 };
 
+/* Defers calls to zval_ptr_dtor for values that are refcounted. */
+struct deferred_dtor_tracker {
+	zval *zvals;           /**< refcounted objects and arrays to call dtor on after unserializing. See i_zval_ptr_dtor */
+	size_t count;    /**< count of refcounted in array for calls to dtor */
+	size_t capacity; /**< capacity of refcounted in array for calls to dtor */
+};
+
 /** Serializer data.
  * @author Oleg Grenrus <oleg.grenrus@dynamoid.com>
  */
@@ -145,9 +152,7 @@ struct igbinary_serialize_data {
 	int string_count;              /**< Serialized string count, used for back referencing */
 	struct igbinary_memory_manager mm; /**< Memory management functions. */
 
-	zval *deferred_dtor;           /**< refcounted objects and arrays to call dtor on after unserializing. See i_zval_ptr_dtor */
-	size_t deferred_dtor_count;    /**< count of refcounted in array for calls to dtor */
-	size_t deferred_dtor_capacity; /**< capacity of refcounted in array for calls to dtor */
+	struct deferred_dtor_tracker deferred_dtor_tracker;  /**< refcounted objects and arrays to call dtor on after serializing. See i_zval_ptr_dtor */
 };
 
 /*
@@ -213,6 +218,7 @@ struct igbinary_unserialize_data {
 	size_t deferred_count;          /**< count of objects in array for calls to __unserialize/__wakeup */
 	size_t deferred_capacity;       /**< capacity of objects in array for calls to __unserialize/__wakeup */
 	zend_bool deferred_finished;    /**< whether the deferred calls were performed */
+	struct deferred_dtor_tracker deferred_dtor_tracker;  /**< refcounted objects and arrays to call dtor on after unserializing. See i_zval_ptr_dtor */
 };
 
 #define IGB_REF_VAL_2(igsd, n)	((igsd)->references[(n)])
@@ -566,17 +572,17 @@ static int igbinary_finish_deferred_calls(struct igbinary_unserialize_data *igsd
 /* }}} */
 
 /* {{{ igsd_ensure_deferred_dtor_capacity(struct igbinary_serialize_data *igsd) */
-static inline int igsd_ensure_deferred_dtor_capacity(struct igbinary_serialize_data *igsd) {
-	if (igsd->deferred_dtor_count >= igsd->deferred_dtor_capacity) {
-		if (igsd->deferred_dtor_capacity == 0) {
-			igsd->deferred_dtor_capacity = 2;
-			igsd->deferred_dtor = emalloc(sizeof(igsd->deferred_dtor[0]) * igsd->deferred_dtor_capacity);
+static inline int igsd_ensure_deferred_dtor_capacity(struct deferred_dtor_tracker *tracker) {
+	if (tracker->count >= tracker->capacity) {
+		if (tracker->capacity == 0) {
+			tracker->capacity = 2;
+			tracker->zvals = emalloc(sizeof(tracker->zvals[0]) * tracker->capacity);
 		} else {
-			igsd->deferred_dtor_capacity *= 2;
-			zval *old_deferred_dtor = igsd->deferred_dtor;
-			igsd->deferred_dtor = erealloc(old_deferred_dtor, sizeof(igsd->deferred_dtor[0]) * igsd->deferred_dtor_capacity);
-			if (UNEXPECTED(igsd->deferred_dtor == NULL)) {
-				igsd->deferred_dtor = old_deferred_dtor;
+			tracker->capacity *= 2;
+			zval *old_deferred_dtor = tracker->zvals;
+			tracker->zvals = erealloc(old_deferred_dtor, sizeof(tracker->zvals[0]) * tracker->capacity);
+			if (UNEXPECTED(tracker->zvals == NULL)) {
+				tracker->zvals = old_deferred_dtor;
 				return 1;
 			}
 		}
@@ -585,17 +591,46 @@ static inline int igsd_ensure_deferred_dtor_capacity(struct igbinary_serialize_d
 }
 /* }}} */
 
+/* {{{ free_deferred_dtors(struct deferred_dtor_tracker *tracker) */
+static inline void free_deferred_dtors(struct deferred_dtor_tracker *tracker) {
+	zval *const zvals = tracker->zvals;
+	if (zvals) {
+		const size_t n = tracker->count;
+		size_t i;
+		for (i = 0; i < n; i++) {
+			/* fprintf(stderr, "freeing i=%d id=%d refcount=%d\n", (int)i, (int)Z_OBJ_HANDLE(zvals[i]), (int)Z_REFCOUNT(zvals[i])); */
+			zval_ptr_dtor(&zvals[i]);
+		}
+		efree(zvals);
+	}
+}
+/* }}} */
+
 /* {{{ igsd_addref_and_defer_dtor(struct igbinary_serialize_data *igsd, zval *z) */
-static inline int igsd_addref_and_defer_dtor(struct igbinary_serialize_data *igsd, zval *z) {
+static inline int igsd_addref_and_defer_dtor(struct deferred_dtor_tracker *tracker, zval *z) {
 	if (!Z_REFCOUNTED_P(z)) {
 		return 0;
 	}
-	if (igsd_ensure_deferred_dtor_capacity(igsd)) {
+	if (igsd_ensure_deferred_dtor_capacity(tracker)) {
 		return 1;
 	}
 
 	ZEND_ASSERT(Z_REFCOUNT_P(z) >= 1);  /* Expect that there were references at the time this was serialized */
-	ZVAL_COPY(&igsd->deferred_dtor[igsd->deferred_dtor_count++], z);
+	ZVAL_COPY(&tracker->zvals[tracker->count++], z);  /* Copy and increase reference count */
+	return 0;
+}
+/* }}} */
+/* {{{ igsd_defer_dtor(struct igbinary_serialize_data *igsd, zval *z) */
+static inline int igsd_defer_dtor(struct deferred_dtor_tracker *tracker, zval *z) {
+	if (!Z_REFCOUNTED_P(z)) {
+		return 0;
+	}
+	if (igsd_ensure_deferred_dtor_capacity(tracker)) {
+		return 1;
+	}
+
+	ZEND_ASSERT(Z_REFCOUNT_P(z) >= 1);  /* Expect that there were references at the time this was serialized */
+	ZVAL_COPY_VALUE(&tracker->zvals[tracker->count++], z);  /* Copy without increasing reference count */
 	return 0;
 }
 /* }}} */
@@ -958,9 +993,9 @@ inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *i
 
 	igsd->compact_strings = (bool)IGBINARY_G(compact_strings);
 
-	igsd->deferred_dtor = NULL;
-	igsd->deferred_dtor_count = 0;
-	igsd->deferred_dtor_capacity = 0;
+	igsd->deferred_dtor_tracker.zvals = NULL;
+	igsd->deferred_dtor_tracker.count = 0;
+	igsd->deferred_dtor_tracker.capacity = 0;
 
 	return r;
 }
@@ -968,7 +1003,6 @@ inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *i
 /* {{{ igbinary_serialize_data_deinit */
 /** Deinits igbinary_serialize_data, freeing the allocated data structures. */
 inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data *igsd, int free_buffer) {
-	zval *const deferred_dtor = igsd->deferred_dtor;
 	if (free_buffer && igsd->buffer) {
 		igsd->mm.free(igsd->buffer, igsd->mm.context);
 	}
@@ -977,15 +1011,7 @@ inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data
 		hash_si_deinit(&igsd->strings);
 		hash_si_ptr_deinit(&igsd->references);
 	}
-
-	if (deferred_dtor) {
-		const size_t n = igsd->deferred_dtor_count;
-		size_t i;
-		for (i = 0; i < n; i++) {
-			zval_ptr_dtor(&deferred_dtor[i]);
-		}
-		efree(deferred_dtor);
-	}
+	free_deferred_dtors(&igsd->deferred_dtor_tracker);
 }
 /* }}} */
 /* {{{ igbinary_serialize_header */
@@ -1370,7 +1396,7 @@ inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *i
 		/* This is a brand new object/array/reference entry with a key equal to igsd->references_id */
 		igsd->references_id++;
 		/* We only need to call this if the array/object is new, in case __serialize or other methods return temporary arrays or modify arrays that were serialized earlier */
-		igsd_addref_and_defer_dtor(igsd, z);
+		igsd_addref_and_defer_dtor(&igsd->deferred_dtor_tracker, z);
 		return 1;
 	}
 
@@ -1922,6 +1948,10 @@ inline static int igbinary_unserialize_data_init(struct igbinary_unserialize_dat
 	igsd->deferred_capacity = 0;
 	igsd->deferred_finished = 0;
 
+	igsd->deferred_dtor_tracker.zvals = NULL;
+	igsd->deferred_dtor_tracker.count = 0;
+	igsd->deferred_dtor_tracker.capacity = 0;
+
 	return 0;
 }
 /* }}} */
@@ -1964,6 +1994,7 @@ inline static void igbinary_unserialize_data_deinit(struct igbinary_unserialize_
 #endif
 		efree(igsd->deferred);
 	}
+	free_deferred_dtors(&igsd->deferred_dtor_tracker);
 
 	return;
 }
@@ -2278,7 +2309,6 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 	uint32_t i;
 
 	zval v;
-	zval *vp;
 
 	enum igbinary_type key_type;
 
@@ -2373,6 +2403,7 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 
 	h = HASH_OF(z_deref);
 	for (i = 0; i < n; i++) {
+		zval *vp;
 		zend_long key_index = 0;
 		zend_string *key_str = NULL; /* NULL means use key_index */
 
@@ -2445,11 +2476,23 @@ cleanup:
 		/* Use NULL because inserting UNDEF into array does not add a new element */
 		ZVAL_NULL(&v);
 		if (key_str != NULL) {
-			vp = zend_hash_update(h, key_str, &v);
+			if (UNEXPECTED((vp = zend_hash_find(h, key_str)) != NULL)) {
+				if (UNEXPECTED(igsd_addref_and_defer_dtor(&igsd->deferred_dtor_tracker, vp))) {
+					return 1;
+				}
+			} else {
+				vp = zend_hash_add_new(h, key_str, &v);
+			}
 
 			zend_string_release(key_str);
 		} else {
-			vp = zend_hash_index_update(h, key_index, &v);
+			if (UNEXPECTED((vp = zend_hash_index_find(h, key_index)) != NULL)) {
+				if (UNEXPECTED(igsd_addref_and_defer_dtor(&igsd->deferred_dtor_tracker, vp))) {
+					return 1;
+				}
+			} else {
+				vp = zend_hash_index_add_new(h, key_index, &v);
+			}
 		}
 
 		ZEND_ASSERT(vp != NULL);
@@ -2459,8 +2502,6 @@ cleanup:
 
 		ZEND_ASSERT(vp != NULL);
 		if (igbinary_unserialize_zval(igsd, vp, WANT_CLEAR)) {
-			/* zval_ptr_dtor(z); */
-			/* zval_ptr_dtor(vp); */
 			return 1;
 		}
 	}
@@ -2601,7 +2642,6 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 		zend_property_info *info = NULL;
 #endif
 		if (prototype_value != NULL) {
-			zval orig_zval_data;
 			if (Z_TYPE_P(prototype_value) == IS_INDIRECT) {
 				/* This is a declared object property */
 				prototype_value = Z_INDIRECT_P(prototype_value);
@@ -2610,13 +2650,15 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 #endif
 			}
 			/* This is written to avoid the overhead of a second zend_hash_update call. See https://github.com/php/php-src/pull/5095 */
-			/* TODO: Use var_push_dtor instead (like php-src), in case of gc causing issues? */
-			orig_zval_data = *prototype_value;
+			/* Use igsd_addref_and_defer_dtor instead (like php-src), in case of gc causing issues. */
+			/* Something already added a reference, so just defer the destructor */
+			if (UNEXPECTED(igsd_defer_dtor(&igsd->deferred_dtor_tracker, prototype_value))) {
+				zend_string_release(key_str);
+				return 1;
+			}
 			/* Just override the original value directly */
 			ZVAL_COPY_VALUE(prototype_value, &v);
 			vp = prototype_value;
-			/* Do any garbage collections on a raw copy of the zval (or the indirect being pointed to) AFTER overwriting the original zval. */
-			zval_ptr_dtor(&orig_zval_data);
 		} else {
 			if (!did_extend) {
 				/* n is at least one, because we're looping from 0..n-1 */
@@ -2668,7 +2710,7 @@ inline static int igbinary_unserialize_object_ser(struct igbinary_unserialize_da
 	php_unserialize_data_t var_hash;
 
 	if (ce->unserialize == NULL) {
-		// Should be impossible.
+		/* Should be impossible. */
 		zend_error(E_WARNING, "Class %s has no unserializer", ZSTR_VAL(ce->name));
 		return 1;
 	}
@@ -2810,7 +2852,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 	}
 
 	{
-		// The actual value of ref is unused. We use ref_n later in this function, after creating the object.
+		/* The actual value of ref is unused. We use ref_n later in this function, after creating the object. */
 		struct igbinary_value_ref ref = {{0}, 0};
 		ref_n = igsd_append_ref(igsd, ref);
 		if (UNEXPECTED(ref_n == SIZE_MAX)) {
@@ -2879,7 +2921,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 		case igbinary_type_object_ser32:
 		{
 			is_from_serialized_data = true;
-			// FIXME will this break if z isn't an object?
+			/* FIXME will this break if z isn't an object? */
 			r = igbinary_unserialize_object_ser(igsd, t, z, ce);
 			if (r != 0) {
 				break;

@@ -16,6 +16,17 @@ matrix:
     env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json' SKIP_VALGRIND=1
     dist: focal
 
+  - php: 8.0
+    env: CC=gcc CFLAGS="" SKIP_VALGRIND=1
+    dist: focal
+  - php: 8.0
+    env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
+    dist: focal
+  # valgrind reports "WARNING: unhandled x86-linux syscall: 403"
+  - php: 8.0
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json' SKIP_VALGRIND=1
+    dist: focal
+
   - php: 7.4
     env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
     dist: focal
