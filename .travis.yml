@@ -20,7 +20,7 @@ matrix:
     dist: focal
   # valgrind reports "WARNING: unhandled x86-linux syscall: 403"
   - php: 8.0
-    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-maintainer-zts --enable-debug --enable-cgi --enable-session --enable-json' SKIP_VALGRIND=1
+    env: CC=gcc CXX=g++ USE_32BIT=1 PHP_CUSTOM=maintainer-zts PHP_CONFIGURE_ARGS='--disable-all --enable-zts --enable-debug --enable-cgi --enable-session --enable-json' SKIP_VALGRIND=1
     dist: focal
 
   - php: 7.4
