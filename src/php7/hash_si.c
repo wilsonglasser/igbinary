@@ -73,7 +73,7 @@ inline static uint32_t get_key_hash(zend_string *key_zstr) {
 #if SIZEOF_ZEND_LONG > 4
 	if (UNEXPECTED(key_hash == 0)) {
 		/* A key_hash of uint32_t(0) would be treated like a gap when inserted. Change the hash used to 1 instead. */
-		/* ZSTR_HASH is non-zero, but the lower bits can be 0 */
+		/* uint32_t(ZSTR_HASH) is 0 for 1 in 4 billion - optimized builds may use cmove so there are no branch mispredicts, changing to key_hash >> 32 doesn't speed up benchmark/serialize-stringarray */
 		return 1;
 	}
 #endif
