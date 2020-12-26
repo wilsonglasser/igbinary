@@ -31,10 +31,10 @@
   <email>tysonandre775@hotmail.com</email>
   <active>yes</active>
  </lead>
- <date>2020-12-23</date>
+ <date>2020-12-26</date>
  <time>16:00:00</time>
  <version>
-  <release>3.2.0dev</release>
+  <release>3.2.0</release>
   <api>1.2.5</api>
  </version>
  <stability>
@@ -43,7 +43,10 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Improve memory efficiency when unserializing packed arrays (e.g. lists) - certain checks are no longer needed.
+* Use PHP's shared empty array instance when unserializing empty arrays in php 7.3+.
+  (helps slightly with memory usage when repeatedly unserializing,
+  when removing elements from arrays before unserializing them,
+  or when serializing values including an empty array that was unserialized)
 * Emit a deprecation notice when serializing resources.
   PHP itself is converting many resources to objects that throw an Error on serialization attempts.
   Continue to represent resources as null in the serialized data.
