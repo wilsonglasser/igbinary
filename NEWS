@@ -1,4 +1,4 @@
-3.2.0dev 202?-??-??
+3.2.0 2020-12-26
 =======
 
 * Improve memory efficiency when unserializing packed arrays (e.g. lists) - certain checks are no longer needed.
