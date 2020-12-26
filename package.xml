@@ -53,7 +53,7 @@
 * Fix memory management bug when unserializing invalid data (duplicate properties in objects (e.g. from `__sleep`) or duplicate fields in arrays (impossible for valid data)).
 * Speed up calls to `__serialize`/`__unserialize` in php 8.0+.
 * Fix error messages for unserialize_callback_func: make messages properly refer to the autoload function.
-* Optimize unserializing alternative names for private/protected constants that were previously public.
+* Optimize unserializing alternative names for private/protected properties that were previously public.
  </notes>
  <contents>
   <dir name="/">
