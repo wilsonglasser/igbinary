@@ -49,6 +49,8 @@
   When there is a memory manager override, only use that for allocating the string to return.
   (benchmarks/serialize-scalar-int.b.php showed a speedup from 0.22 to 0.18 seconds for repeated serialization of a single scalar,
   and from 0.186 to 0.180 seconds for benchmarks/serialize-stringarray.b.php for an array of strings)
+* Speed up unserializing arrays in php 7.2-8.0 by adding optimized code for finding the hash bucket of
+  a string/integer key of an array, or creating a placeholder if it does not already exist.
  </notes>
  <contents>
   <dir name="/">
@@ -60,10 +62,11 @@
    <file name="src/php7/hash_ptr.h" role="src" />
    <file name="src/php7/hash_si.c" role="src" />
    <file name="src/php7/hash_si_ptr.c" role="src" />
-   <file name="src/php7/igbinary_bswap.h" role="src" />
    <file name="src/php7/igbinary.c" role="src" />
    <file name="src/php7/igbinary.h" role="src" />
+   <file name="src/php7/igbinary_bswap.h" role="src" />
    <file name="src/php7/igbinary_macros.h" role="src" />
+   <file name="src/php7/igbinary_zend_hash.h" role="src" />
    <file name="src/php7/php_igbinary.h" role="src" />
    <file name="src/php7/ig_win32.h" role="src" />
    <file name="igbinary.php" role="doc" />

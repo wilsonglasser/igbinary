@@ -56,11 +56,11 @@
 # include <stdint.h>
 #endif
 
-
 #include <stddef.h>
 #include "hash.h"
 #include "hash_ptr.h"
 #include "zend_alloc.h"
+#include "igbinary_zend_hash.h"
 
 #if HAVE_PHP_SESSION && !defined(COMPILE_DL_SESSION)
 /** Session serializer function prototypes. */
@@ -86,6 +86,7 @@ static inline HashTable *HASH_OF_OBJECT(zval *p) {
 
 #if PHP_VERSION_ID < 70300
 #define zend_string_release_ex(s, persistent) zend_string_release((s))
+
 static zend_always_inline void zval_ptr_dtor_str(zval *zval_ptr)
 {
        if (Z_REFCOUNTED_P(zval_ptr) && !Z_DELREF_P(zval_ptr)) {
@@ -2033,7 +2034,7 @@ inline static void igbinary_unserialize_data_deinit(struct igbinary_unserialize_
 			}
 		}
 #endif
-		efree(igsd->deferred);
+		efree(calls);
 	}
 	free_deferred_dtors(&igsd->deferred_dtor_tracker);
 
@@ -2337,8 +2338,6 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 	uint32_t n;
 	uint32_t i;
 
-	zval v;
-
 	enum igbinary_type key_type;
 
 	HashTable *h;
@@ -2503,24 +2502,19 @@ cleanup:
 
 		/* first add key into array so references can properly and not stack allocated zvals */
 		/* Use NULL because inserting UNDEF into array does not add a new element */
-		ZVAL_NULL(&v);
 		if (key_str != NULL) {
-			if (UNEXPECTED((vp = zend_hash_find(h, key_str)) != NULL)) {
-				if (UNEXPECTED(igsd_addref_and_defer_dtor(&igsd->deferred_dtor_tracker, vp))) {
-					return 1;
-				}
-			} else {
-				vp = zend_hash_add_new(h, key_str, &v);
+			vp = igbinary_zend_hash_add_or_find(h, key_str);
+			/* If there was an old value instead of an inserted IS_NULL zval (unlikely) and that old value was refcounted, then add a reference and defer freeing that reference */
+			if (UNEXPECTED(igsd_addref_and_defer_dtor(&igsd->deferred_dtor_tracker, vp))) {
+				return 1;
 			}
 
 			zend_string_release(key_str);
 		} else {
-			if (UNEXPECTED((vp = zend_hash_index_find(h, key_index)) != NULL)) {
-				if (UNEXPECTED(igsd_addref_and_defer_dtor(&igsd->deferred_dtor_tracker, vp))) {
-					return 1;
-				}
-			} else {
-				vp = zend_hash_index_add_new(h, key_index, &v);
+			/* If there was an old value instead of an inserted IS_NULL zval (unlikely) and that old value was refcounted, then add a reference and defer freeing that reference */
+			vp = igbinary_zend_hash_index_add_or_find(h, key_index);
+			if (UNEXPECTED(igsd_addref_and_defer_dtor(&igsd->deferred_dtor_tracker, vp))) {
+				return 1;
 			}
 		}
 

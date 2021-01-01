@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 'stderr');
 class Bench {
 	private $name;
 	private $headerWritten = false;
