@@ -1,7 +1,7 @@
 #ifndef PHPEXT_IGBINARY_BASE_PHP_IGBINARY_H
 #define PHPEXT_IGBINARY_BASE_PHP_IGBINARY_H
 #include "php_version.h"
-#if PHP_MAJOR_VERSION == 7
+#if PHP_MAJOR_VERSION == 7 || PHP_MAJOR_VERSION == 8
 #include "ext/igbinary/src/php7/php_igbinary.h"
 #else
 #error "Unsupported php version for igbinary build"
