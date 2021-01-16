@@ -1,12 +1,12 @@
 <?php
 
-// Description: Unserialize array of small integers
+// Description: Unserialize empty array
 // NOTE: Unserialization of positive integers in the range 0-65536 is specifically optimized.
 // (they're common as counts, offsets, array indexes, etc.)
 
 require_once 'bench.php';
 
-$b = new Bench('unserialize-intarray');
+$b = new Bench('unserialize-emptyarray');
 
 $ser = igbinary_serialize([]);
 
