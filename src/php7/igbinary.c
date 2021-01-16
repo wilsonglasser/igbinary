@@ -141,9 +141,9 @@ enum igbinary_type {
 	/* 18 */ igbinary_type_object16,		/**< Object. */
 	/* 19 */ igbinary_type_object32,		/**< Object. */
 
-	/* 1a */ igbinary_type_object_id8,		/**< Object string id. */
-	/* 1b */ igbinary_type_object_id16,		/**< Object string id. */
-	/* 1c */ igbinary_type_object_id32,		/**< Object string id. */
+	/* 1a */ igbinary_type_object_id8,		/**< Object class name string id. */
+	/* 1b */ igbinary_type_object_id16,		/**< Object class name string id. */
+	/* 1c */ igbinary_type_object_id32,		/**< Object class name string id. */
 
 	/* 1d */ igbinary_type_object_ser8,		/**< Object serialized data. */
 	/* 1e */ igbinary_type_object_ser16,	/**< Object serialized data. */
@@ -1001,17 +1001,17 @@ inline static int igbinary_serialize_data_init(struct igbinary_serialize_data *i
 	}
 
 	igsd->scalar = scalar;
-	if (!igsd->scalar) {
+	if (scalar) {
+		igsd->compact_strings = 0;
+	} else {
 		hash_si_init(&igsd->strings, 16);
 		hash_si_ptr_init(&igsd->references, 16);
 		igsd->references_id = 0;
+		igsd->compact_strings = (bool)IGBINARY_G(compact_strings);
+		igsd->deferred_dtor_tracker.zvals = NULL;
+		igsd->deferred_dtor_tracker.count = 0;
+		igsd->deferred_dtor_tracker.capacity = 0;
 	}
-
-	igsd->compact_strings = (bool)IGBINARY_G(compact_strings);
-
-	igsd->deferred_dtor_tracker.zvals = NULL;
-	igsd->deferred_dtor_tracker.count = 0;
-	igsd->deferred_dtor_tracker.capacity = 0;
 
 	return r;
 }
@@ -1026,8 +1026,8 @@ inline static void igbinary_serialize_data_deinit(struct igbinary_serialize_data
 	if (!igsd->scalar) {
 		hash_si_deinit(&igsd->strings);
 		hash_si_ptr_deinit(&igsd->references);
+		free_deferred_dtors(&igsd->deferred_dtor_tracker);
 	}
-	free_deferred_dtors(&igsd->deferred_dtor_tracker);
 }
 /* }}} */
 /* {{{ igbinary_serialize_header */
