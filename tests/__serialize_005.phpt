@@ -5,8 +5,11 @@ __serialize() mechanism (005): parent::__unserialize() is safe
 --FILE--
 <?php
 
+// NOTE: PHP 8.1.0 changed the way property iteration is done to optimize memory usage(affects var_dump output order but not the correctness of igbinary).
+// To work around this, declare all properties on the same class.
 class A {
     private $data;
+    protected $data2;
     public function __construct(array $data) {
         $this->data = $data;
     }
@@ -19,7 +22,6 @@ class A {
 }
 
 class B extends A {
-    private $data2;
     public function __construct(array $data, array $data2) {
         parent::__construct($data);
         $this->data2 = $data2;
@@ -43,13 +45,13 @@ var_dump(igbinary_unserialize($s));
 --EXPECT--
 string(70) "0000000217014214020600140106001708737464436c61737314000601140106002202"
 object(B)#3 (2) {
-  ["data2":"B":private]=>
+  ["data":"A":private]=>
   array(1) {
     [0]=>
     object(stdClass)#4 (0) {
     }
   }
-  ["data":"A":private]=>
+  ["data2":protected]=>
   array(1) {
     [0]=>
     object(stdClass)#4 (0) {
