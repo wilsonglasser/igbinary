@@ -10,7 +10,6 @@ issue when serializing/deserializing nested objects with __serialize
 // (However, the serialized data generated before/after 7.4 would be incompatible if saved to memcache, etc.)
 class Event
 {
-    private $propagationStopped = false;
 }
 
 class MessageEvents
@@ -32,6 +31,7 @@ class MessageEvents
 
 final class MessageEvent extends Event
 {
+    private $propagationStopped = false;
     private $message;
     private $envelope;
     private $transport;
@@ -58,8 +58,11 @@ final class MessageEvent extends Event
 
 class Envelope
 {
-    private $sender;
-    private $recipients = [];
+    protected $sender;
+    protected $recipients = [];
+    protected $senderSet = false;
+    protected $recipientsSet = false;
+    protected $message;
 
     public function __construct(Address $sender, array $recipients)
     {
@@ -93,9 +96,6 @@ class Envelope
 
 final class DelayedEnvelope extends Envelope
 {
-    private $senderSet = false;
-    private $recipientsSet = false;
-    private $message;
 
     public function __construct(Message $message)
     {
@@ -166,6 +166,7 @@ abstract class AbstractHeader
     private $lineLength = 76;
     private $lang;
     private $charset = 'utf-8';
+    protected $addresses = [];
 
     public function __construct(string $name)
     {
@@ -251,8 +252,6 @@ final class Headers
 
 final class MailboxListHeader extends AbstractHeader
 {
-    private $addresses = [];
-
     public function __construct(string $name, array $addresses)
     {
         parent::__construct($name);
@@ -278,7 +277,14 @@ final class MailboxListHeader extends AbstractHeader
 
 class RawMessage
 {
-    private $message;
+    protected $message;
+    protected $headers;
+    protected $body;
+    protected $text;
+    protected $textCharset;
+    protected $html;
+    protected $htmlCharset;
+    protected $attachments = [];
 
     public function __construct($message)
     {
@@ -298,8 +304,6 @@ class RawMessage
 
 class Message extends RawMessage
 {
-    private $headers;
-    private $body;
 
     public function __construct(Headers $headers = null, AbstractPart $body = null)
     {
@@ -332,11 +336,6 @@ class Message extends RawMessage
 
 class Email extends Message
 {
-    private $text;
-    private $textCharset;
-    private $html;
-    private $htmlCharset;
-    private $attachments = [];
     public function to(...$addresses)
     {
         return $this->setListAddressHeaderBody('To', $addresses);
@@ -391,20 +390,13 @@ object(MessageEvents)#1 (2) {
   array(2) {
     [0]=>
     object(MessageEvent)#2 (5) {
+      ["propagationStopped":"MessageEvent":private]=>
+      bool(false)
       ["message":"MessageEvent":private]=>
       object(Email)#3 (8) {
-        ["text":"Email":private]=>
+        ["message":protected]=>
         NULL
-        ["textCharset":"Email":private]=>
-        NULL
-        ["html":"Email":private]=>
-        NULL
-        ["htmlCharset":"Email":private]=>
-        NULL
-        ["attachments":"Email":private]=>
-        array(0) {
-        }
-        ["headers":"Message":private]=>
+        ["headers":protected]=>
         object(Headers)#4 (2) {
           ["headers":"Headers":private]=>
           array(1) {
@@ -412,7 +404,15 @@ object(MessageEvents)#1 (2) {
             array(1) {
               [0]=>
               object(MailboxListHeader)#6 (5) {
-                ["addresses":"MailboxListHeader":private]=>
+                ["name":"AbstractHeader":private]=>
+                string(2) "To"
+                ["lineLength":"AbstractHeader":private]=>
+                int(76)
+                ["lang":"AbstractHeader":private]=>
+                NULL
+                ["charset":"AbstractHeader":private]=>
+                string(5) "utf-8"
+                ["addresses":protected]=>
                 array(1) {
                   [0]=>
                   object(Address)#5 (2) {
@@ -422,45 +422,42 @@ object(MessageEvents)#1 (2) {
                     string(0) ""
                   }
                 }
-                ["name":"AbstractHeader":private]=>
-                string(2) "To"
-                ["lineLength":"AbstractHeader":private]=>
-                int(76)
-                ["lang":"AbstractHeader":private]=>
-                NULL
-                ["charset":"AbstractHeader":private]=>
-                string(5) "utf-8"
               }
             }
           }
           ["lineLength":"Headers":private]=>
           int(76)
         }
-        ["body":"Message":private]=>
+        ["body":protected]=>
         NULL
-        ["message":"RawMessage":private]=>
+        ["text":protected]=>
         NULL
+        ["textCharset":protected]=>
+        NULL
+        ["html":protected]=>
+        NULL
+        ["htmlCharset":protected]=>
+        NULL
+        ["attachments":protected]=>
+        array(0) {
+        }
       }
       ["envelope":"MessageEvent":private]=>
       object(DelayedEnvelope)#7 (5) {
-        ["senderSet":"DelayedEnvelope":private]=>
+        ["sender":protected]=>
+        NULL
+        ["recipients":protected]=>
+        array(0) {
+        }
+        ["senderSet":protected]=>
         bool(false)
-        ["recipientsSet":"DelayedEnvelope":private]=>
+        ["recipientsSet":protected]=>
         bool(false)
-        ["message":"DelayedEnvelope":private]=>
+        ["message":protected]=>
         object(Email)#3 (8) {
-          ["text":"Email":private]=>
+          ["message":protected]=>
           NULL
-          ["textCharset":"Email":private]=>
-          NULL
-          ["html":"Email":private]=>
-          NULL
-          ["htmlCharset":"Email":private]=>
-          NULL
-          ["attachments":"Email":private]=>
-          array(0) {
-          }
-          ["headers":"Message":private]=>
+          ["headers":protected]=>
           object(Headers)#4 (2) {
             ["headers":"Headers":private]=>
             array(1) {
@@ -468,7 +465,15 @@ object(MessageEvents)#1 (2) {
               array(1) {
                 [0]=>
                 object(MailboxListHeader)#6 (5) {
-                  ["addresses":"MailboxListHeader":private]=>
+                  ["name":"AbstractHeader":private]=>
+                  string(2) "To"
+                  ["lineLength":"AbstractHeader":private]=>
+                  int(76)
+                  ["lang":"AbstractHeader":private]=>
+                  NULL
+                  ["charset":"AbstractHeader":private]=>
+                  string(5) "utf-8"
+                  ["addresses":protected]=>
                   array(1) {
                     [0]=>
                     object(Address)#5 (2) {
@@ -478,54 +483,41 @@ object(MessageEvents)#1 (2) {
                       string(0) ""
                     }
                   }
-                  ["name":"AbstractHeader":private]=>
-                  string(2) "To"
-                  ["lineLength":"AbstractHeader":private]=>
-                  int(76)
-                  ["lang":"AbstractHeader":private]=>
-                  NULL
-                  ["charset":"AbstractHeader":private]=>
-                  string(5) "utf-8"
                 }
               }
             }
             ["lineLength":"Headers":private]=>
             int(76)
           }
-          ["body":"Message":private]=>
+          ["body":protected]=>
           NULL
-          ["message":"RawMessage":private]=>
+          ["text":protected]=>
           NULL
-        }
-        ["sender":"Envelope":private]=>
-        NULL
-        ["recipients":"Envelope":private]=>
-        array(0) {
+          ["textCharset":protected]=>
+          NULL
+          ["html":protected]=>
+          NULL
+          ["htmlCharset":protected]=>
+          NULL
+          ["attachments":protected]=>
+          array(0) {
+          }
         }
       }
       ["transport":"MessageEvent":private]=>
       string(11) "null://null"
       ["queued":"MessageEvent":private]=>
       bool(false)
-      ["propagationStopped":"Event":private]=>
-      bool(false)
     }
     [1]=>
     object(MessageEvent)#8 (5) {
+      ["propagationStopped":"MessageEvent":private]=>
+      bool(false)
       ["message":"MessageEvent":private]=>
       object(Email)#9 (8) {
-        ["text":"Email":private]=>
+        ["message":protected]=>
         NULL
-        ["textCharset":"Email":private]=>
-        NULL
-        ["html":"Email":private]=>
-        NULL
-        ["htmlCharset":"Email":private]=>
-        NULL
-        ["attachments":"Email":private]=>
-        array(0) {
-        }
-        ["headers":"Message":private]=>
+        ["headers":protected]=>
         object(Headers)#10 (2) {
           ["headers":"Headers":private]=>
           array(1) {
@@ -533,7 +525,15 @@ object(MessageEvents)#1 (2) {
             array(1) {
               [0]=>
               object(MailboxListHeader)#12 (5) {
-                ["addresses":"MailboxListHeader":private]=>
+                ["name":"AbstractHeader":private]=>
+                string(2) "To"
+                ["lineLength":"AbstractHeader":private]=>
+                int(76)
+                ["lang":"AbstractHeader":private]=>
+                NULL
+                ["charset":"AbstractHeader":private]=>
+                string(5) "utf-8"
+                ["addresses":protected]=>
                 array(1) {
                   [0]=>
                   object(Address)#11 (2) {
@@ -543,45 +543,42 @@ object(MessageEvents)#1 (2) {
                     string(0) ""
                   }
                 }
-                ["name":"AbstractHeader":private]=>
-                string(2) "To"
-                ["lineLength":"AbstractHeader":private]=>
-                int(76)
-                ["lang":"AbstractHeader":private]=>
-                NULL
-                ["charset":"AbstractHeader":private]=>
-                string(5) "utf-8"
               }
             }
           }
           ["lineLength":"Headers":private]=>
           int(76)
         }
-        ["body":"Message":private]=>
+        ["body":protected]=>
         NULL
-        ["message":"RawMessage":private]=>
+        ["text":protected]=>
         NULL
+        ["textCharset":protected]=>
+        NULL
+        ["html":protected]=>
+        NULL
+        ["htmlCharset":protected]=>
+        NULL
+        ["attachments":protected]=>
+        array(0) {
+        }
       }
       ["envelope":"MessageEvent":private]=>
       object(DelayedEnvelope)#13 (5) {
-        ["senderSet":"DelayedEnvelope":private]=>
+        ["sender":protected]=>
+        NULL
+        ["recipients":protected]=>
+        array(0) {
+        }
+        ["senderSet":protected]=>
         bool(false)
-        ["recipientsSet":"DelayedEnvelope":private]=>
+        ["recipientsSet":protected]=>
         bool(false)
-        ["message":"DelayedEnvelope":private]=>
+        ["message":protected]=>
         object(Email)#9 (8) {
-          ["text":"Email":private]=>
+          ["message":protected]=>
           NULL
-          ["textCharset":"Email":private]=>
-          NULL
-          ["html":"Email":private]=>
-          NULL
-          ["htmlCharset":"Email":private]=>
-          NULL
-          ["attachments":"Email":private]=>
-          array(0) {
-          }
-          ["headers":"Message":private]=>
+          ["headers":protected]=>
           object(Headers)#10 (2) {
             ["headers":"Headers":private]=>
             array(1) {
@@ -589,7 +586,15 @@ object(MessageEvents)#1 (2) {
               array(1) {
                 [0]=>
                 object(MailboxListHeader)#12 (5) {
-                  ["addresses":"MailboxListHeader":private]=>
+                  ["name":"AbstractHeader":private]=>
+                  string(2) "To"
+                  ["lineLength":"AbstractHeader":private]=>
+                  int(76)
+                  ["lang":"AbstractHeader":private]=>
+                  NULL
+                  ["charset":"AbstractHeader":private]=>
+                  string(5) "utf-8"
+                  ["addresses":protected]=>
                   array(1) {
                     [0]=>
                     object(Address)#11 (2) {
@@ -599,36 +604,30 @@ object(MessageEvents)#1 (2) {
                       string(0) ""
                     }
                   }
-                  ["name":"AbstractHeader":private]=>
-                  string(2) "To"
-                  ["lineLength":"AbstractHeader":private]=>
-                  int(76)
-                  ["lang":"AbstractHeader":private]=>
-                  NULL
-                  ["charset":"AbstractHeader":private]=>
-                  string(5) "utf-8"
                 }
               }
             }
             ["lineLength":"Headers":private]=>
             int(76)
           }
-          ["body":"Message":private]=>
+          ["body":protected]=>
           NULL
-          ["message":"RawMessage":private]=>
+          ["text":protected]=>
           NULL
-        }
-        ["sender":"Envelope":private]=>
-        NULL
-        ["recipients":"Envelope":private]=>
-        array(0) {
+          ["textCharset":protected]=>
+          NULL
+          ["html":protected]=>
+          NULL
+          ["htmlCharset":protected]=>
+          NULL
+          ["attachments":protected]=>
+          array(0) {
+          }
         }
       }
       ["transport":"MessageEvent":private]=>
       string(11) "null://null"
       ["queued":"MessageEvent":private]=>
-      bool(false)
-      ["propagationStopped":"Event":private]=>
       bool(false)
     }
   }
