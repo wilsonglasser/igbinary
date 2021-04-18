@@ -12,7 +12,7 @@ An example run is below, where 64-bit php is compiled on Linux with '-O2',
 and igbinary/msgpack are compiled as shared extensions, with their default CFLAGS.
 
 Running with PHP 7.4.11-dev
-igbinary version=3.2.2dev
+igbinary version=3.2.2
 opcache is enabled
 igbinary.compact_strings=1
 Smaller times are better (the iterations completed faster)
