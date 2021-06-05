@@ -1,6 +1,8 @@
 --TEST--
 Object Serializable interface
---SKIPIF--
+--INI--
+; Note that php 8.1 deprecates using Serializable without __serialize/__unserialize but we are testing Serialize for igbinary. Suppress deprecations.
+error_reporting=E_ALL & ~E_DEPRECATED
 --FILE--
 <?php
 if(!extension_loaded('igbinary')) {

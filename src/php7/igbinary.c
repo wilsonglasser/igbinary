@@ -2930,7 +2930,7 @@ static int igbinary_unserialize_object_enum_case(struct igbinary_unserialize_dat
 	}
 
 	zend_class_constant *c = Z_PTR_P(zv);
-	if (UNEXPECTED(!(Z_ACCESS_FLAGS(c->value) & ZEND_CLASS_CONST_IS_CASE))) {
+	if (UNEXPECTED(!(ZEND_CLASS_CONST_FLAGS(c) & ZEND_CLASS_CONST_IS_CASE))) {
 		zend_error(E_WARNING, "igbinary_unserialize_object_enum_case: %s::%s is not an enum case", ZSTR_VAL(ce->name), ZSTR_VAL(case_name));
 		zend_string_release(case_name);
 		return 1;

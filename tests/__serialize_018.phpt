@@ -2,9 +2,11 @@
 __serialize() freed on unserialize exception without calling destructor.
 --SKIPIF--
 <?php if (PHP_VERSION_ID < 70400) { echo "skip __serialize/__unserialize not supported in php < 7.4 for compatibility with serialize()"; } ?>
+--INI--
+; Note that php 8.1 deprecates using Serializable without __serialize/__unserialize but we are testing Serialize for igbinary. Suppress deprecations.
+error_reporting=E_ALL & ~E_DEPRECATED
 --FILE--
 <?php
-
 class ThrowsInUnserialize implements Serializable {
     public function serialize() {
         return "test data";
