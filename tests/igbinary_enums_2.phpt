@@ -18,7 +18,10 @@ enum Suit {
 $arr = ['Hearts' => Suit::Hearts];
 $arr[1] = &$arr['Hearts'];
 $serArray = igbinary_serialize($arr);
-echo urlencode($serArray), "\n";
+// PHP 8.1 added support for %0 as a null byte in EXPECTF in https://github.com/php/php-src/pull/7069
+// Igbinary's use case of urlencode on binary data is rare.
+// So replace % with \x
+echo str_replace(['\\', '%'], ['\\\\', '\x'], urlencode($serArray)), "\n";
 $result = igbinary_unserialize($serArray);
 var_dump($result);
 $result[1] = 'new';
@@ -36,7 +39,7 @@ $serInvalidClass = str_replace('Suit', 'ABCD', $serArray);
 var_dump(igbinary_unserialize($serInvalidClass));
 ?>
 --EXPECTF--
-%00%00%00%02%14%02%11%06Hearts%25%17%04Suit%27%0E%00%06%01%25%22%01
+\x00\x00\x00\x02\x14\x02\x11\x06Hearts\x25\x17\x04Suit\x27\x0E\x00\x06\x01\x25\x22\x01
 array(2) {
   ["Hearts"]=>
   &enum(Suit::Hearts)
@@ -50,14 +53,14 @@ array(2) {
   &string(3) "new"
 }
 
-Warning: igbinary_unserialize_object_enum_case: Suit::HEARTS is not an enum case in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 22
+Warning: igbinary_unserialize_object_enum_case: Suit::HEARTS is not an enum case in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 25
 NULL
 
-Warning: igbinary_unserialize_object_enum_case: Undefined constant Suit::vvvvvv in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 25
+Warning: igbinary_unserialize_object_enum_case: Undefined constant Suit::vvvvvv in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 28
 NULL
 
-Warning: igbinary_unserialize_object_enum_case: Class 'Club' does not exist in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 28
+Warning: igbinary_unserialize_object_enum_case: Class 'Club' does not exist in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 31
 NULL
 
-Warning: igbinary_unserialize_object_enum_case: Class 'ABCD' is not an enum in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 31
+Warning: igbinary_unserialize_object_enum_case: Class 'ABCD' is not an enum in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 34
 NULL

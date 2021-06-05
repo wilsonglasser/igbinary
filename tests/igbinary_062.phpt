@@ -1,9 +1,11 @@
 --TEST--
 igbinary should not call __wakeup() if Serializable::unserialize was used to unserialize the object data (like `unserialize`)
+--INI--
+; Note that php 8.1 deprecates using Serializable without __serialize/__unserialize but we are testing Serialize for igbinary. Suppress deprecations.
+error_reporting=E_ALL & ~E_DEPRECATED
 --FILE--
 <?php
 
-error_reporting(E_ALL);
 class A implements Serializable {
    public $prop = 'value';
    public function serialize() {

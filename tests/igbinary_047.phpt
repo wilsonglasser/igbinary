@@ -23,33 +23,35 @@ if (!$array) {
 $output = '';
 
 class S implements SessionHandlerInterface {
-    public function open($path, $name) {
+    public function open($path, $name): bool {
         return true;
     }
 
-    public function close() {
+    public function close(): bool {
         return true;
     }
 
-    public function read($id) {
+    public function read($id): string {
         global $output;
         $output .= "read\n";
         return pack('H*', '0000000214011103666f6f0601');
     }
 
-    public function write($id, $data) {
+    public function write($id, $data): bool {
         global $output;
         $output .= "wrote: ";
         $output .= substr(bin2hex($data), 8). "\n";
         return true;
     }
 
-    public function destroy($id) {
+    public function destroy($id): bool {
         return true;
     }
 
-    public function gc($time) {
-        return true;
+    // > Returns the number of deleted sessions on success, or false on failure.
+    // > Note this value is returned internally to PHP for processing.
+    public function gc($time): int {
+        return 0;
     }
 }
 
