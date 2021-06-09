@@ -3014,6 +3014,12 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 		zval_ptr_dtor(&retval);
 		zval_ptr_dtor_str(&user_func);
 
+		/* User function call may have raised an exception */
+		if (EG(exception)) {
+			zend_string_release_ex(class_name, 0);
+			return 1;
+		}
+
 		/* The callback function may have defined the class */
 		ce = zend_lookup_class(class_name);
 		if (!ce) {
@@ -3023,12 +3029,6 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 		}
 
 	} while (0);
-
-	/* previous user function call may have raised an exception */
-	if (EG(exception)) {
-		zend_string_release(class_name);
-		return 1;
-	}
 
 	/* add this to the list of unserialized references, get the index */
 	if (IGB_NEEDS_MORE_DATA(igsd, 1)) {
