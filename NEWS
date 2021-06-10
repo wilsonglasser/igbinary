@@ -1,3 +1,10 @@
+3.2.3 2021-06-09
+=======
+
+* Fix build for php 8.1 after changes to enum internals.
+* Update tests to suppress deprecations in php 8.1 and support run-tests.php changes in php 8.1
+* Don't emit a notice when unserialize_callback_func causes igbinary_unserialize to throw https://bugs.php.net/bug.php?id=81118
+
 3.2.2 2021-04-18
 =======
 
