@@ -34,7 +34,7 @@
  <date>2021-06-09</date>
  <time>16:00:00</time>
  <version>
-  <release>3.2.3</release>
+  <release>3.2.4dev</release>
   <api>1.3.1</api>
  </version>
  <stability>
@@ -43,9 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix build for php 8.1 after changes to enum internals.
-* Update tests to suppress deprecations in php 8.1 and support run-tests.php changes in php 8.1
-* Don't emit a notice when unserialize_callback_func causes igbinary_unserialize to throw https://bugs.php.net/bug.php?id=81118
+* TBD
  </notes>
  <contents>
   <dir name="/">
@@ -221,6 +219,24 @@
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2021-06-09</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.2.3</release>
+    <api>1.3.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Fix build for php 8.1 after changes to enum internals.
+* Update tests to suppress deprecations in php 8.1 and support run-tests.php changes in php 8.1
+* Don't emit a notice when unserialize_callback_func causes igbinary_unserialize to throw https://bugs.php.net/bug.php?id=81118
+   </notes>
+  </release>
   <release>
    <date>2021-04-18</date>
    <time>16:00:00</time>

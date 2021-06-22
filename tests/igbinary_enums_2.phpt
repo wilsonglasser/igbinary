@@ -53,14 +53,14 @@ array(2) {
   &string(3) "new"
 }
 
-Warning: igbinary_unserialize_object_enum_case: Suit::HEARTS is not an enum case in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 25
+Warning: igbinary_unserialize_object_enum_case: Suit::HEARTS is not an enum case in %s on line 25
 NULL
 
-Warning: igbinary_unserialize_object_enum_case: Undefined constant Suit::vvvvvv in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 28
+Warning: igbinary_unserialize_object_enum_case: Undefined constant Suit::vvvvvv in %s on line 28
 NULL
 
-Warning: igbinary_unserialize_object_enum_case: Class 'Club' does not exist in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 31
+Warning: igbinary_unserialize_object_enum_case: Class 'Club' does not exist in %s on line 31
 NULL
 
-Warning: igbinary_unserialize_object_enum_case: Class 'ABCD' is not an enum in /home/tyson/programming/igbinary/tests/igbinary_enums_2.php on line 34
+Warning: igbinary_unserialize_object_enum_case: Class 'ABCD' is not an enum in %s on line 34
 NULL
