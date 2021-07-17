@@ -4,9 +4,9 @@
  <channel>pecl.php.net</channel>
  <summary>igbinary extension</summary>
  <description>Igbinary is a drop in replacement for the standard php serializer. Instead of
-	time and space consuming textual representation, igbinary stores php data
-	structures in a compact binary form. Savings are significant when using
-	memcached or similar memory based storages for serialized data.</description>
+the time and space consuming textual representation used by PHP's serialize(), igbinary stores php data
+structures in a compact binary form. Savings are significant when using
+memcached or similar memory based storages for serialized data.</description>
  <lead>
   <name>Oleg Grenrus</name>
   <user>phadej</user>
@@ -28,7 +28,7 @@
  <lead>
   <name>Tyson Andre</name>
   <user>tandre</user>
-  <email>tysonandre775@hotmail.com</email>
+  <email>tandre@php.net</email>
   <active>yes</active>
  </lead>
  <date>2021-06-09</date>
@@ -43,7 +43,7 @@
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* TBD
+* Forbid serializing classes that deny serialization/unserialization (anonymous classes, CURLFile, etc.) even when subclasses implement '__serialize' and '__unserialize'
  </notes>
  <contents>
   <dir name="/">
@@ -200,8 +200,14 @@
     <file name="igbinary_088.phpt" role="test" />
     <file name="igbinary_089.phpt" role="test" />
     <file name="igbinary_090.phpt" role="test" />
+    <file name="igbinary_091.phpt" role="test" />
+    <file name="igbinary_092.phpt" role="test" />
+    <file name="igbinary_093.phpt" role="test" />
+    <file name="igbinary_094.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
+    <file name="igbinary_enums_1.phpt" role="test" />
+    <file name="igbinary_enums_2.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
    </dir>
   </dir>
