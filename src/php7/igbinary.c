@@ -17,7 +17,9 @@
 
 #include "php.h"
 #include "php_ini.h"
-#include "zend_alloc.h"
+#include "Zend/zend_alloc.h"
+#include "Zend/zend_exceptions.h"
+#include "Zend/zend_interfaces.h"
 #include "ext/standard/info.h"
 #include "ext/standard/php_var.h"
 
@@ -106,6 +108,18 @@ static zend_always_inline void zval_ptr_dtor_str(zval *zval_ptr)
   if (UNEXPECTED((cmd) != 0)) {   \
     return 1;                     \
   }
+
+#if PHP_VERSION_ID >= 70400
+# ifdef ZEND_ACC_NOT_SERIALIZABLE
+#define IGBINARY_IS_NOT_SERIALIZABLE(ce) UNEXPECTED((ce)->ce_flags & (ZEND_ACC_NOT_SERIALIZABLE | ZEND_ACC_ANON_CLASS))
+# else
+#define IGBINARY_IS_NOT_SERIALIZABLE(ce) UNEXPECTED(((ce)->ce_flags & (ZEND_ACC_ANON_CLASS)) || (ce)->serialize == zend_class_serialize_deny)
+# endif
+#else
+// Because '__serialize' is not available prior to 7.4, this check is redundant.
+#define IGBINARY_IS_NOT_SERIALIZABLE(ce) (0)
+#endif
+
 
 /* {{{ Types */
 enum igbinary_type {
@@ -1877,6 +1891,11 @@ inline static int igbinary_serialize_object(struct igbinary_serialize_data *igsd
 
 	/* custom serializer */
 	if (ce) {
+		if (IGBINARY_IS_NOT_SERIALIZABLE(ce)) {
+			zend_throw_exception_ex(NULL, 0, "Serialization of '%s' is not allowed", ZSTR_VAL(ce->name));
+			return 1;
+		}
+
 #if PHP_VERSION_ID >= 80100
 		if (ce->ce_flags & ZEND_ACC_ENUM) {
 			return igbinary_serialize_object_enum_case(igsd, Z_OBJ_P(z), ce);
@@ -2845,6 +2864,11 @@ static ZEND_COLD int igbinary_unserialize_object_ser(struct igbinary_unserialize
 		return 1;
 	}
 
+	if (IGBINARY_IS_NOT_SERIALIZABLE(ce)) {
+		zend_throw_exception_ex(NULL, 0, "Unserialization of '%s' is not allowed", ZSTR_VAL(ce->name));
+		return 1;
+	}
+
 	if (t == igbinary_type_object_ser8) {
 		if (IGB_NEEDS_MORE_DATA(igsd, 1)) {
 			zend_error(E_WARNING, "igbinary_unserialize_object_ser: end-of-data");
@@ -3027,8 +3051,13 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 			incomplete_class = true;
 			ce = PHP_IC_ENTRY;
 		}
-
 	} while (0);
+
+	if (IGBINARY_IS_NOT_SERIALIZABLE(ce)) {
+		zend_throw_exception_ex(NULL, 0, "Unserialization of '%s' is not allowed", ZSTR_VAL(ce->name));
+		zend_string_release(class_name);
+		return 1;
+	}
 
 	/* add this to the list of unserialized references, get the index */
 	if (IGB_NEEDS_MORE_DATA(igsd, 1)) {

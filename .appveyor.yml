@@ -1,6 +1,6 @@
 # Based on php-ast's appveyor config.
 # See https://github.com/nikic/php-ast/blob/master/.appveyor.yml
-# This tests against the multiple minor versions of PHP 7
+# This tests against PHP 7.0+
 # Author: Tyson Andre
 
 version: '{branch}.{build}'
@@ -36,12 +36,22 @@ environment:
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                   ARCH: x86
                   VC: vs16
-                  PHP_VER: 8.0.7
+                  PHP_VER: 8.1.0alpha3
                   TS: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                   ARCH: x64
                   VC: vs16
-                  PHP_VER: 8.0.7
+                  PHP_VER: 8.1.0alpha3
+                  TS: 0
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                  ARCH: x86
+                  VC: vs16
+                  PHP_VER: 8.0.8
+                  TS: 1
+                - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+                  ARCH: x64
+                  VC: vs16
+                  PHP_VER: 8.0.8
                   TS: 0
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
                   ARCH: x64
@@ -86,22 +96,22 @@ environment:
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
                   ARCH: x86
                   VC: vc15
-                  PHP_VER: 7.3.28
+                  PHP_VER: 7.3.29
                   TS: 0
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
                   ARCH: x64
                   VC: vc15
-                  PHP_VER: 7.3.28
+                  PHP_VER: 7.3.29
                   TS: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
                   ARCH: x64
                   VC: vc15
-                  PHP_VER: 7.4.20
+                  PHP_VER: 7.4.21
                   TS: 1
                 - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
                   ARCH: x86
                   VC: vc15
-                  PHP_VER: 7.4.20
+                  PHP_VER: 7.4.21
                   TS: 0
 
 build_script:

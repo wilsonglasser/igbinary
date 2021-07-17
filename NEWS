@@ -1,7 +1,7 @@
 3.2.4dev
 =======
 
-* TBD
+* Forbid serializing classes that deny serialization/unserialization (anonymous classes, CURLFile, etc.) even when subclasses implement '__serialize' and '__unserialize'
 
 3.2.3 2021-06-09
 =======
