@@ -231,6 +231,12 @@ static zend_always_inline zval *igbinary_zend_hash_add_or_find(HashTable *ht, ze
 add_to_hash:
 	idx = ht->nNumUsed++;
 	ht->nNumOfElements++;
+#if PHP_VERSION_ID < 70300
+	if (ht->nInternalPointer == HT_INVALID_IDX) {
+		ht->nInternalPointer = idx;
+	}
+	zend_hash_iterators_update(ht, HT_INVALID_IDX, idx);
+#endif
 	arData = ht->arData;
 	p = arData + idx;
 	p->key = key;
@@ -316,6 +322,12 @@ convert_to_hash:
 	}
 add:
 	ht->nNumOfElements++;
+#if PHP_VERSION_ID < 70300
+	if (ht->nInternalPointer == HT_INVALID_IDX) {
+		ht->nInternalPointer = ht->nNumUsed - 1;
+	}
+	zend_hash_iterators_update(ht, HT_INVALID_IDX, ht->nNumUsed - 1);
+#endif
 	p->h = h;
 	p->key = NULL;
 	ZVAL_NULL(&p->val);
