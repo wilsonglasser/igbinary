@@ -32,7 +32,7 @@ fi
 
 # Otherwise, put a minimal installation inside of the cache.
 if [ "$PHP_CUSTOM_NORMAL_VERSION" == "8.1.0" ] ; then
-	PHP_CUSTOM_VERSION=8.1.0beta1
+	PHP_CUSTOM_VERSION=8.1.0beta2
 	PHP_FOLDER="php-$PHP_CUSTOM_VERSION"
 
 	PHP_TAR_FILE="$PHP_FOLDER.tar.bz2"
