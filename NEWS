@@ -1,3 +1,8 @@
+3.2.5 2021-08-07
+=======
+
+* Fix change in behavior introduced in 3.2.2RC1 when unserializing arrays - the internal array pointer (for `next()`, `key()`, etc) pointed past the end of the array in php 7.0-7.2.
+
 3.2.4 2021-07-24
 =======
 
