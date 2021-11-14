@@ -8,10 +8,12 @@ matrix:
   - php: nightly
     env: CC=gcc CFLAGS="" SKIP_VALGRIND=1
     dist: focal
-  - php: nightly
+  - php: 8.1.0RC6
+    env: CC=gcc CFLAGS="" SKIP_VALGRIND=1
+    dist: focal
+  - php: 8.1.0RC6
     env: CC=gcc CFLAGS="-g -O0 -fstack-protector -fstack-protector-all" SKIP_VALGRIND=1
     dist: focal
-
   - php: 8.0
     env: CC=gcc CFLAGS="" SKIP_VALGRIND=1
     dist: focal
