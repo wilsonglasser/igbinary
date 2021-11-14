@@ -1,5 +1,7 @@
 --TEST--
-Object test, unserialize_callback_func
+Object test, unserialize_callback_func (PHP < 8.2)
+--SKIPIF--
+<?php if (PHP_VERSION_ID < 80200) echo "skip requires php < 8.2\n"; ?>
 --INI--
 error_reporting=E_ALL
 unserialize_callback_func=autoload
