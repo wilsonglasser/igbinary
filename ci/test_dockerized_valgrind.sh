@@ -26,6 +26,8 @@ PHP_VERSION_FULL=$2
 # NOTE: php 7.3+ will fail in valgrind without "--with-valgrind" because php-src uses custom assembly for its implementation of zend_string_equals
 # In order to fix those false positives, a different set of images would be needed where (1) valgrind was installed before compiling php, and (2) php was compiled with support for valgrind (--with-valgrind) to avoid false positives
 # docker run --rm $DOCKER_IMAGE ci/test_inner_valgrind.sh
-DOCKER_IMAGE_VALGRIND=igbinary-$PHP_VERSION_FULL-valgrind-test-runner
+
+# Note that image repository names must be lowercase, so PHP_VERSION_FULL such as 8.1.0RC6 must be in the tag, not in the image name
+DOCKER_IMAGE_VALGRIND=igbinary-valgrind-test-runner:$PHP_VERSION_FULL
 docker build --build-arg="PHP_VERSION=$PHP_VERSION" --build-arg="PHP_VERSION_FULL=$PHP_VERSION_FULL" --tag="$DOCKER_IMAGE_VALGRIND" -f ci/Dockerfile.valgrind .
 docker run --rm $DOCKER_IMAGE_VALGRIND ci/test_inner_valgrind.sh
