@@ -68,6 +68,7 @@ void hash_si_deinit(struct hash_si *h) {
 /* }}} */
 /* {{{ get_key_hash */
 inline static uint32_t get_key_hash(zend_string *key_zstr) {
+	/* Fetch the hash, computing and storing it in key_zstr if it was not computed before. */
 	uint32_t key_hash = ZSTR_HASH(key_zstr);
 #if SIZEOF_ZEND_LONG > 4
 	if (UNEXPECTED(key_hash == 0)) {
@@ -120,9 +121,12 @@ inline static void hash_si_rehash(struct hash_si *h) {
 	efree(old_data);
 }
 /* }}} */
+/* {{{ hash_si_find_or_insert */
 /**
  * If the string key already exists in the map, return the associated value.
  * If it doesn't exist, indicate that to the caller.
+ *
+ * This is used in igbinary_serialize to deduplicate strings.
  */
 struct hash_si_result hash_si_find_or_insert(struct hash_si *h, zend_string *key_zstr, uint32_t value) {
 	struct hash_si_result result;

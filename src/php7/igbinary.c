@@ -320,7 +320,7 @@ inline static uint64_t igbinary_unserialize64(struct igbinary_unserialize_data *
 inline static int igbinary_unserialize_long(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zend_long *ret);
 inline static int igbinary_unserialize_double(struct igbinary_unserialize_data *igsd, double *ret);
 inline static zend_string *igbinary_unserialize_string(struct igbinary_unserialize_data *igsd, enum igbinary_type t);
-inline static zend_string *igbinary_unserialize_chararray(struct igbinary_unserialize_data *igsd, enum igbinary_type t);
+inline static zend_string *igbinary_unserialize_chararray(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zend_bool check_interned);
 
 inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, int flags, zend_bool create_ref);
 inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, int flags);
@@ -2346,8 +2346,12 @@ inline static zend_string *igbinary_unserialize_string(struct igbinary_unseriali
 
 	zstr = igsd->strings[i];
 	// Add one more ref (currently not using any interned strings) - Callers of this will decrease refs as needed
+#if PHP_VERSION_ID >= 80100
+	zend_string_addref(zstr);
+#else
 	ZEND_ASSERT(!ZSTR_IS_INTERNED(zstr));
 	GC_ADDREF(zstr);
+#endif
 	return zstr;
 }
 /* }}} */
@@ -2393,7 +2397,7 @@ static ZEND_COLD zend_never_inline zend_string* igbinary_unserialize_extremely_l
 /* }}} */
 /* {{{ igbinary_unserialize_chararray */
 /** Unserializes chararray of string. Returns NULL on error. */
-inline static zend_string *igbinary_unserialize_chararray(struct igbinary_unserialize_data *igsd, enum igbinary_type t) {
+inline static zend_string *igbinary_unserialize_chararray(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zend_bool check_interned) {
 	size_t l;
 	zend_string *zstr;
 
@@ -2447,11 +2451,27 @@ inline static zend_string *igbinary_unserialize_chararray(struct igbinary_unseri
 		igsd->strings = new_strings;
 	}
 
-	zstr = zend_string_init((const char*)igsd->buffer_ptr, l, 0);
+#if PHP_VERSION_ID >= 80100
+	if (check_interned && l < 100) {
+		/*
+		 * Reuse interned strings if possible for the following reasons:
+		 * 1. Save memory (e.g. for strings in property default values of classes, for arrays repeating string field names, etc.)
+		 * 2. Speed up checking if strings are identical.
+		 * 3. Speed up the code that ends up using the return value of igbinary_unserialize().
+		 *
+		 * Note that this change has mixed results. unserialize-object-array and unserialize-stdclass have performance improve because all strings are already interned,
+		 * but unserialize-stringarray on unstructured text has worse performance.
+		 */
+		zstr = zend_string_init_existing_interned((const char*)igsd->buffer_ptr, l, 0);
+		zend_string_addref(zstr);
+	} else
+#endif
+	{
+		zstr = zend_string_init((const char*)igsd->buffer_ptr, l, 0);
+		GC_ADDREF(zstr); /* definitely not interned. Add a reference in case the first reference gets deleted before reusing the temporary string */
+	}
 
 	igsd->buffer_ptr += l;
-
-	GC_ADDREF(zstr); /* definitely not interned. Add a reference in case the first reference gets deleted before reusing the temporary string */
 
 	igsd->strings[igsd->strings_count] = zstr;
 	igsd->strings_count += 1;
@@ -2613,7 +2633,7 @@ cleanup:
 			case igbinary_type_string16:
 			case igbinary_type_string32:
 			case igbinary_type_string64:
-				key_str = igbinary_unserialize_chararray(igsd, key_type);
+				key_str = igbinary_unserialize_chararray(igsd, key_type, 1);
 				if (UNEXPECTED(key_str == NULL)) {
 					goto cleanup;
 				}
@@ -2768,7 +2788,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 			case igbinary_type_string16:
 			case igbinary_type_string32:
 			case igbinary_type_string64:
-				key_str = igbinary_unserialize_chararray(igsd, key_type);
+				key_str = igbinary_unserialize_chararray(igsd, key_type, 1);
 				if (UNEXPECTED(key_str == NULL)) {
 					zval_dtor(z);
 					ZVAL_UNDEF(z);
@@ -2937,7 +2957,7 @@ static int igbinary_unserialize_object_enum_case(struct igbinary_unserialize_dat
 		case igbinary_type_string16:
 		case igbinary_type_string32:
 		case igbinary_type_string64:
-			case_name = igbinary_unserialize_chararray(igsd, t);
+			case_name = igbinary_unserialize_chararray(igsd, t, 1);
 			break;
 		default:
 			case_name = igbinary_unserialize_string(igsd, t);
@@ -2993,7 +3013,7 @@ inline static int igbinary_unserialize_object(struct igbinary_unserialize_data *
 	bool is_from_serialized_data = false;
 
 	if (t == igbinary_type_object8 || t == igbinary_type_object16 || t == igbinary_type_object32) {
-		class_name = igbinary_unserialize_chararray(igsd, t);
+		class_name = igbinary_unserialize_chararray(igsd, t, 1);
 	} else if (t == igbinary_type_object_id8 || t == igbinary_type_object_id16 || t == igbinary_type_object_id32) {
 		class_name = igbinary_unserialize_string(igsd, t);
 	} else {
@@ -3434,7 +3454,7 @@ static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zva
 		case igbinary_type_string16:
 		case igbinary_type_string32:
 		case igbinary_type_string64:
-			tmp_str = igbinary_unserialize_chararray(igsd, t);
+			tmp_str = igbinary_unserialize_chararray(igsd, t, 0);
 			if (UNEXPECTED(tmp_str == NULL)) {
 				return 1;
 			}
