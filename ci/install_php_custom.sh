@@ -30,19 +30,10 @@ if [ "x${TRAVIS:-0}" != "x" ]; then
     rm -rf $HOME/travis_cache/
 fi
 
-# Otherwise, put a minimal installation inside of the cache.
-if [ "$PHP_CUSTOM_NORMAL_VERSION" == "8.1.0" ] ; then
-	PHP_CUSTOM_VERSION=8.1.0beta2
-	PHP_FOLDER="php-$PHP_CUSTOM_VERSION"
+PHP_FOLDER="php-$PHP_CUSTOM_NORMAL_VERSION"
 
-	PHP_TAR_FILE="$PHP_FOLDER.tar.bz2"
-	PHP_TAR_URL=https://downloads.php.net/~ramsey/$PHP_TAR_FILE
-else
-	PHP_FOLDER="php-$PHP_CUSTOM_VERSION"
-
-	PHP_TAR_FILE="$PHP_FOLDER.tar.bz2"
-	PHP_TAR_URL=https://secure.php.net/distributions/$PHP_TAR_FILE
-fi
+PHP_TAR_FILE="$PHP_FOLDER.tar.bz2"
+PHP_TAR_URL=https://secure.php.net/distributions/$PHP_TAR_FILE
 if [ ! -f $PHP_TAR_FILE ]; then
 	curl --location --verbose $PHP_TAR_URL -o $PHP_TAR_FILE
 fi
