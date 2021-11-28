@@ -6,19 +6,21 @@
 
 require_once 'bench.php';
 
-$b = new Bench('unserialize-intarray');
+call_user_func(function () {
+    $b = new Bench('unserialize-intarray');
 
-$array = array();
-for ($i = 0; $i < 256; $i++) {
-	$array[] = $i;
-}
-$ser = igbinary_serialize($array);
+    $array = array();
+    for ($i = 0; $i < 256; $i++) {
+        $array[] = $i;
+    }
+    $ser = igbinary_serialize($array);
 
-for ($i = 0; $i < 40; $i++) {
-	$b->start();
-	for ($j = 0; $j < 50000; $j++) {
-		$array = igbinary_unserialize($ser);
-	}
-	$b->stop($j);
-	$b->write();
-}
+    for ($i = 0; $i < 40; $i++) {
+        $b->start();
+        for ($j = 0; $j < 50000; $j++) {
+            $array = igbinary_unserialize($ser);
+        }
+        $b->stop($j);
+        $b->write();
+    }
+});

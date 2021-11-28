@@ -44,6 +44,10 @@ memcached or similar memory based storages for serialized data.</description>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
 * Update test expectation for php 8.2.0-dev.
+* In php 8.1+, make igbinary_unserialize check to see if an equivalent interned string already exists when unserializing object property names, array keys, and class names
+  and use that instead of creating a brand new string.
+  (This deliberately doesn't create a new interned string if one doesn't already exist.)
+  (Before this change, igbinary would deduplicate strings when serializing, but would not check if strings were interned by PHP itself when unserializing)
  </notes>
  <contents>
   <dir name="/">

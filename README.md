@@ -2,7 +2,6 @@ igbinary
 ========
 
 [![Build Status](https://github.com/igbinary/igbinary/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/igbinary/igbinary/actions/workflows/main.yml?query=branch%3Amaster)
-[![Build Status](https://travis-ci.org/igbinary/igbinary.svg?branch=v3)](https://travis-ci.org/igbinary/igbinary)
 [![Build Status (Windows)](https://ci.appveyor.com/api/projects/status/suhkkumj1yh9dgan?svg=true)](https://ci.appveyor.com/project/TysonAndre/igbinary-bemsx)
 
 Igbinary is a drop in replacement for the standard php serializer.
