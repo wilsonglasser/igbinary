@@ -2,6 +2,7 @@
 igbinary and __PHP_INCOMPLETE_CLASS
 --FILE--
 <?php
+#[AllowDynamicProperties]
 class Test {}
 function test_ser_unser($obj) {
     var_dump(bin2hex($s = igbinary_serialize($obj)));

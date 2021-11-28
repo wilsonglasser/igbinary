@@ -1,9 +1,9 @@
 --TEST--
 __wakeup can replace a copy of the object referring to the root node.
---SKIPIF--
 --FILE--
 <?php
 
+#[AllowDynamicProperties]
 class Obj {
 	function __construct($a) {
 		$this->a = $a;

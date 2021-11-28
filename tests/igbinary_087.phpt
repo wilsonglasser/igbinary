@@ -4,6 +4,7 @@ Test serializing many values in __sleep
 <?php if (!extension_loaded("igbinary")) print "skip"; ?>
 --FILE--
 <?php
+#[AllowDynamicProperties]
 class X {
     public function __sleep() {
         $props = array_keys((array)$this);

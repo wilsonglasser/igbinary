@@ -1,10 +1,11 @@
 --TEST--
 __serialize() mechanism (004): Delayed __unserialize() calls
 --SKIPIF--
-<?php if (PHP_VERSION_ID < 70400) { echo "skip __serialize/__unserialize not supported in php < 7.4 for compatibility with serialize()"; } ?>
+<?php if (PHP_VERSION_ID < 70400) { echo "skip __serialize/__unserialize not supported in php < 7.4 for compatibility with serialize()\n"; } ?>
 --FILE--
 <?php
 
+#[AllowDynamicProperties]
 class Wakeup {
     public $data;
     public function __construct(array $data) {
@@ -17,6 +18,7 @@ class Wakeup {
     }
 }
 
+#[AllowDynamicProperties]
 class Unserialize {
     public $data;
     public function __construct(array $data) {

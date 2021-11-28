@@ -43,7 +43,7 @@ memcached or similar memory based storages for serialized data.</description>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Update test expectation for php 8.2.0-dev.
+* Update test expectations for php 8.2.0-dev. Add `#[AllowDynamicProperties]` Attribute to some tests to avoid notices.
 * In php 8.1+, make igbinary_unserialize check to see if an equivalent interned string already exists when unserializing object property names, array keys, and class names
   and use that instead of creating a brand new string.
   (This deliberately doesn't create a new interned string if one doesn't already exist.)
@@ -215,6 +215,7 @@ memcached or similar memory based storages for serialized data.</description>
     <file name="igbinary_enums_1.phpt" role="test" />
     <file name="igbinary_enums_2.phpt" role="test" />
     <file name="igbinary_unserialize_v1_compatible.phpt" role="test" />
+    <file name="php82_suppress_dynamic_properties_warning.inc" role="test" />
    </dir>
   </dir>
  </contents>
