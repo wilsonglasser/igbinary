@@ -1,9 +1,11 @@
 --TEST--
 __serialize() mechanism (007): handle __destruct of returned data
 --SKIPIF--
-<?php if (PHP_VERSION_ID < 70400) { echo "skip __serialize/__unserialize not supported in php < 7.4 for compatibility with serialize()"; } ?>
+<?php if (PHP_VERSION_ID < 70400) { echo "skip __serialize/__unserialize not supported in php < 7.4 for compatibility with serialize()\n"; } ?>
+<?php if (PHP_VERSION_ID >= 90000) { echo "skip requires php < 9.0 when testing that the deprecation has no impact on igbinary functionality\n"; } ?>
 --FILE--
 <?php
+if (PHP_VERSION_ID >= 80200) { require_once __DIR__ . '/php82_suppress_dynamic_properties_warning.inc'; }
 
 class DestructorThrows {
     public function __construct(string $val) {

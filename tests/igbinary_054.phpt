@@ -1,9 +1,9 @@
 --TEST--
 __wakeup can add dynamic properties without affecting other objects
---SKIPIF--
 --FILE--
 <?php
 
+#[AllowDynamicProperties]
 class Obj {
 	// Testing $this->a being a dynamic property.
 

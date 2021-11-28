@@ -6,6 +6,7 @@ __serialize() mechanism (013): Properties are still typed after unserialization 
 <?php
 declare(strict_types=1);
 
+#[AllowDynamicProperties]
 class Test {
     public int $i = 0;
     public ?string $s = 's';

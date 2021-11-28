@@ -1,10 +1,15 @@
 --TEST--
 __serialize() mechanism (016): Properties are still typed after unserialization (references)
 --SKIPIF--
-<?php if (PHP_VERSION_ID < 80000) { echo "skip __serialize/__unserialize error message different in php < 8"; } ?>
+<?php
+if (PHP_VERSION_ID < 80000) { echo "skip __serialize/__unserialize error message different in php < 8"; }
+if (PHP_VERSION_ID >= 90000) { echo "skip requires php < 9.0 when testing that the deprecation has no impact on igbinary functionality\n"; }
+?>
 --FILE--
 <?php
 declare(strict_types=1);
+
+if (PHP_VERSION_ID >= 80200) { require_once __DIR__ . '/php82_suppress_dynamic_properties_warning.inc'; }
 
 class Test {
     public int $i = 0;

@@ -9,6 +9,7 @@ if(!extension_loaded('igbinary')) {
 --FILE--
 <?php
 
+#[AllowDynamicProperties]
 class Fy{
     public $EzFy = 2;
     public function __construct($x) {

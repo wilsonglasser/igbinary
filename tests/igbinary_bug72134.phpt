@@ -1,7 +1,8 @@
 --TEST--
-igbinary_unserialize causes segfault on 3rd call for objects with dynamic property
+igbinary_unserialize regression test for segfault on 3rd call for objects with dynamic property
 --FILE--
 <?php
+#[AllowDynamicProperties]
 class Obj
 {
     public $bar = "test";
