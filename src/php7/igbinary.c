@@ -2562,6 +2562,12 @@ inline static int igbinary_unserialize_array(struct igbinary_unserialize_data *i
 	}
 	array_init_size(z_deref, n);
 	h = Z_ARRVAL_P(z_deref);
+#if PHP_VERSION_ID >= 70200
+	/* The array may contain references to itself, in which case we'll be modifying an
+	 * rc>1 array. This is okay, since the array is, ostensibly, only visible to
+	 * unserialize (in practice unserialization handlers also see it). */
+	HT_ALLOW_COW_VIOLATION(h);
+#endif
 	if (create_ref) {
 		/* Only create a reference if this is not from __unserialize(), because the existence of __unserialize can change */
 		struct igbinary_value_ref ref;

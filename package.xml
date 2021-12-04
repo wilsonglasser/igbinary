@@ -48,6 +48,7 @@ memcached or similar memory based storages for serialized data.</description>
   and use that instead of creating a brand new string.
   (This deliberately doesn't create a new interned string if one doesn't already exist.)
   (Before this change, igbinary would deduplicate strings when serializing, but would not check if strings were interned by PHP itself when unserializing)
+* Avoid debug build assertion failure for `HT_ASSERT_RC1` the same way as PHP's unserialize - this is a case where ostensibly there are no other references to the array being unserialized.
  </notes>
  <contents>
   <dir name="/">
@@ -210,6 +211,7 @@ memcached or similar memory based storages for serialized data.</description>
     <file name="igbinary_094.phpt" role="test" />
     <file name="igbinary_095.phpt" role="test" />
     <file name="igbinary_096.phpt" role="test" />
+    <file name="igbinary_097.phpt" role="test" />
     <file name="igbinary_bug54662.phpt" role="test" />
     <file name="igbinary_bug72134.phpt" role="test" />
     <file name="igbinary_enums_1.phpt" role="test" />
