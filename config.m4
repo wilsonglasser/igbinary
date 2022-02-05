@@ -35,7 +35,7 @@ if test "$PHP_IGBINARY" != "no"; then
 #error PHP < 7
 #endif
   ]])],[
-  AC_MSG_RESULT([PHP 7])
+  AC_MSG_RESULT([PHP 7 or newer])
   ],[
   AC_MSG_ERROR([PHP 5 is not supported by igbinary 3. Use igbinary 2 instead for PHP5 support.])
   ])

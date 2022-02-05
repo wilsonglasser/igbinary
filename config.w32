@@ -6,7 +6,7 @@ if (PHP_IGBINARY == "yes") {
   var dll = get_define('PHPDLL');
   var is_php5 = null != dll.match(/^php5/);
   // php 8.x also uses src/php7
-  var is_php7 = !is_php5 && null != dll.match(/^php[78]/)
+  var is_php7_or_newer = !is_php5 && null != dll.match(/^php[78]/)
 
   if (CHECK_HEADER_ADD_INCLUDE("apc_serializer.h", "CFLAGS_IGBINARY", "..\\pecl\\apcu;ext\\apcu")) {
     AC_DEFINE('HAVE_APCU_SUPPORT', 1, "Whether to enable apcu support");
@@ -25,7 +25,7 @@ if (PHP_IGBINARY == "yes") {
      then set it back*/
   if (is_php5) {
     ERROR("PHP 5 is not supported by igbinary 3 - Use igbinary 2.x");
-  } else if (is_php7) {
+  } else if (is_php7_or_newer) {
     subdir = "src\\php7";
     php_igbinary_src_files = "igbinary.c hash_si.c hash_si_ptr.c"
   } else {
