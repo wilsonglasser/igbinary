@@ -123,12 +123,16 @@ void hash_si_traverse (struct hash_si *h, int (*traverse_function) (const char *
  * @param h Pointer to hash_si struct.
  * @return Size of hash_si.
  */
-size_t hash_si_size(struct hash_si *h);
+static zend_always_inline size_t hash_si_size(struct hash_si *h) {
+	return h->used;
+}
 
 /** Returns capacity of hash_si.
  * @param h Pointer to hash_si struct.
  * @return Capacity of hash_si.
  */
-size_t hash_si_capacity(struct hash_si *h);
+static zend_always_inline size_t hash_si_capacity(struct hash_si *h) {
+	return h->mask + 1;
+}
 
 #endif /* HASH_H */

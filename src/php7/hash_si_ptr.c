@@ -78,10 +78,6 @@ int hash_si_ptr_init(struct hash_si_ptr *h, size_t size) {
  */
 void hash_si_ptr_deinit(struct hash_si_ptr *h) {
 	efree(h->data);
-	h->data = NULL;
-
-	h->size = 0;
-	h->used = 0;
 }
 /* }}} */
 /* {{{ hash_si_ptr_rehash */
@@ -153,7 +149,7 @@ size_t hash_si_ptr_find_or_insert(struct hash_si_ptr *h, const zend_uintptr_t ke
 			h->used++;
 
 			/* The size increased, so check if we need to expand the map */
-			if ((h->size >> 1) < h->used) {
+			if (UNEXPECTED((h->size >> 1) < h->used)) {
 				hash_si_ptr_rehash(h);
 			}
 			return SIZE_MAX;
@@ -164,28 +160,6 @@ size_t hash_si_ptr_find_or_insert(struct hash_si_ptr *h, const zend_uintptr_t ke
 		/* linear prob */
 		hv = (hv + 1) & mask;
 	}
-}
-/* }}} */
-/* {{{ hash_si_ptr_size */
-/**
- * @param h the hash map from pointers to integers.
- * @return the number of elements in this hash map.
- */
-size_t hash_si_ptr_size(struct hash_si_ptr *h) {
-	assert(h != NULL);
-
-	return h->used;
-}
-/* }}} */
-/* {{{ hash_si_ptr_capacity */
-/**
- * @param h the hash map from pointers to integers.
- * @return the capacity of this hash map.
- */
-size_t hash_si_ptr_capacity(struct hash_si_ptr *h) {
-	assert(h != NULL);
-
-	return h->size;
 }
 /* }}} */
 
