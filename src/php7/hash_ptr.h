@@ -86,7 +86,9 @@ int hash_si_ptr_find (struct hash_si_ptr *h, const zend_uintptr_t key, uint32_t 
  * @param h Pointer to hash_si_ptr struct.
  * @return Size of hash_si_ptr.
  */
-size_t hash_si_ptr_size(struct hash_si_ptr *h);
+static zend_always_inline size_t hash_si_ptr_size(struct hash_si_ptr *h) {
+	return h->used;
+}
 
 /**
  * If the key does not exist, add a mapping from key to value and returns SIZE_MAX
@@ -103,6 +105,8 @@ size_t hash_si_ptr_find_or_insert(struct hash_si_ptr *h, const zend_uintptr_t ke
  * @param h Pointer to hash_si_ptr struct.
  * @return Capacity of hash_si_ptr.
  */
-size_t hash_si_ptr_capacity(struct hash_si_ptr *h);
+zend_always_inline static size_t hash_si_ptr_capacity(struct hash_si_ptr *h) {
+	return h->size;
+}
 
 #endif /* HASH_PTR_H */

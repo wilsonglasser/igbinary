@@ -20,26 +20,12 @@
 #include "hash.h"
 #include "zend.h"
 
-/* {{{ nextpow2 */
-/** Next power of 2.
- * @param n Integer.
- * @return the smallest power of 2 that is >= n.
- */
-inline static uint32_t nextpow2(uint32_t n) {
-	uint32_t m = 1;
-	while (m < n) {
-		m = m << 1;
-	}
-
-	return m;
-}
-/* }}} */
 /* {{{ hash_si_init */
 /**
  * Initializes a hash_si value with the given capacity
  */
 int hash_si_init(struct hash_si *h, uint32_t size) {
-	size = nextpow2(size);
+	ZEND_ASSERT((size & (size - 1)) == 0 && size > 0);
 
 	h->mask = size - 1;
 	h->used = 0;
@@ -53,13 +39,15 @@ int hash_si_init(struct hash_si *h, uint32_t size) {
 /* }}} */
 /* {{{ hash_si_deinit */
 void hash_si_deinit(struct hash_si *h) {
-	size_t i;
-	const size_t mask = h->mask;
 	struct hash_si_pair *const data = h->data;
+	if (h->used > 0) {
+		size_t i;
+		const size_t mask = h->mask;
 
-	for (i = 0; i <= mask; i++) {
-		if (data[i].key_zstr != NULL) {
-			zend_string_release(data[i].key_zstr);
+		for (i = 0; i <= mask; i++) {
+			if (data[i].key_zstr != NULL) {
+				zend_string_release(data[i].key_zstr);
+			}
 		}
 	}
 
@@ -67,7 +55,7 @@ void hash_si_deinit(struct hash_si *h) {
 }
 /* }}} */
 /* {{{ get_key_hash */
-inline static uint32_t get_key_hash(zend_string *key_zstr) {
+zend_always_inline static uint32_t get_key_hash(zend_string *key_zstr) {
 	/* Fetch the hash, computing and storing it in key_zstr if it was not computed before. */
 	uint32_t key_hash = ZSTR_HASH(key_zstr);
 #if SIZEOF_ZEND_LONG > 4
@@ -84,7 +72,7 @@ inline static uint32_t get_key_hash(zend_string *key_zstr) {
 /** Rehash/resize hash_si.
  * @param h Pointer to hash_si struct.
  */
-inline static void hash_si_rehash(struct hash_si *h) {
+zend_always_inline static void hash_si_rehash(struct hash_si *h) {
 	size_t i;
 	size_t old_size;
 	size_t new_size;
@@ -152,7 +140,7 @@ struct hash_si_result hash_si_find_or_insert(struct hash_si *h, zend_string *key
 			h->used++;
 
 			/* The size increased, so check if we need to expand the map */
-			if (h->mask * 3 / 4 < h->used) {
+			if (UNEXPECTED(h->mask * 3 / 4 < h->used)) {
 				hash_si_rehash(h);
 			}
 			result.code = hash_si_code_inserted;
@@ -183,22 +171,6 @@ void hash_si_traverse(struct hash_si *h, int (*traverse_function) (const char *k
 	}
 }
 */
-/* }}} */
-/* {{{ hash_si_size */
-/** Returns the number of elements in the hash map h. */
-size_t hash_si_size(struct hash_si *h) {
-	assert(h != NULL);
-
-	return h->used;
-}
-/* }}} */
-/* {{{ hash_si_capacity */
-/** Returns the capacity of the hash map h */
-size_t hash_si_capacity(struct hash_si *h) {
-	assert(h != NULL);
-
-	return h->mask + 1;
-}
 /* }}} */
 
 /*

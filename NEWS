@@ -1,3 +1,9 @@
+3.2.8dev 2022-??-??
+=======
+
+* Reduce excessive inlining to reduce shared library size.
+* Miscellaneous optimizations.
+
 3.2.7 2022-01-12
 =======
 
