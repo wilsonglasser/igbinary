@@ -361,12 +361,8 @@ static const zend_module_dep igbinary_module_deps[] = {
 
 /* {{{ igbinary_module_entry */
 zend_module_entry igbinary_module_entry = {
-#if ZEND_MODULE_API_NO >= 20050922
 	STANDARD_MODULE_HEADER_EX, NULL,
 	igbinary_module_deps,
-#elif ZEND_MODULE_API_NO >= 20010901
-	STANDARD_MODULE_HEADER,
-#endif
 	"igbinary",
 	igbinary_functions,
 	PHP_MINIT(igbinary),
@@ -374,9 +370,7 @@ zend_module_entry igbinary_module_entry = {
 	NULL,
 	NULL,
 	PHP_MINFO(igbinary),
-#if ZEND_MODULE_API_NO >= 20010901
-	PHP_IGBINARY_VERSION, /* Replace with version number for your extension */
-#endif
+	PHP_IGBINARY_VERSION,
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
