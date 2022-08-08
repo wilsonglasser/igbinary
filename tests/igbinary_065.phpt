@@ -2,7 +2,7 @@
 Don't emit zval has unknown type 0 (IS_UNDEF)
 --FILE--
 <?php
-
+function var_export_normalized($value) { echo ltrim(var_export($value, true), "\\"); }
 class MyClass {
     public $kept = 2;
     public $x;
@@ -27,7 +27,7 @@ error_reporting(E_ALL);
 // TODO: emit 'Notice: igbinary_serialize(): "x" returned as member variable from __sleep() but does not exist' instead.
 $serialized = igbinary_serialize(new MyClass());
 echo bin2hex($serialized) . "\n";
-var_export(igbinary_unserialize($serialized));
+var_export_normalized(igbinary_unserialize($serialized));
 echo "\n";
 ?>
 --EXPECTF--
