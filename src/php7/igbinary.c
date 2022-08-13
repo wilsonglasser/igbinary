@@ -2678,7 +2678,7 @@ cleanup:
 /* }}} */
 /* {{{ igbinary_unserialize_object_properties */
 /** Unserializes the array of object properties and adds those to the object z. */
-inline static int igbinary_unserialize_object_properties(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z) {
+inline static int igbinary_unserialize_object_properties(struct igbinary_unserialize_data *igsd, enum igbinary_type t, zval *const z, const zend_class_entry *ce) {
 	/* WANT_REF means that z will be wrapped by an IS_REFERENCE */
 	uint32_t n;
 
@@ -2827,6 +2827,26 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 			ZVAL_COPY_VALUE(prototype_value, &v);
 			vp = prototype_value;
 		} else {
+#if PHP_VERSION_ID >= 80000
+			/* ZEND_ACC_NO_DYNAMIC_PROPERTIES was introduced in php 8.0 but was largely used with zend_class_unserialize_deny, though external pecls might set this flag. */
+			if (UNEXPECTED(ce->ce_flags & ZEND_ACC_NO_DYNAMIC_PROPERTIES)) {
+				zend_throw_error(NULL, "Cannot create dynamic property %s::$%s in igbinary_unserialize",
+					ZSTR_VAL(ce->name), zend_get_unmangled_property_name(key_str));
+				zend_string_release(key_str);
+				return 1;
+			}
+#endif
+#if PHP_VERSION_ID >= 80200
+			/* PHP 8.2 deprecated the creation of dynamic properties by default without `#[AllowDynamicProperties]`. */
+			if (UNEXPECTED(!(ce->ce_flags & ZEND_ACC_ALLOW_DYNAMIC_PROPERTIES))) {
+				php_error_docref(NULL, E_DEPRECATED, "Creation of dynamic property %s::$%s is deprecated",
+					ZSTR_VAL(ce->name), zend_get_unmangled_property_name(key_str));
+				zend_string_release(key_str);
+				if (UNEXPECTED(EG(exception))) {
+					return 1;
+				}
+			}
+#endif
 			if (!did_extend) {
 				/* remaining_elements is at least one, because we're looping from n-1..0 */
 				uint32_t remaining_elements = n + 1;
@@ -3148,7 +3168,7 @@ zend_always_inline static int igbinary_unserialize_object(struct igbinary_unseri
 				ref->type = IG_REF_IS_OBJECT;
 			}
 
-			r = igbinary_unserialize_object_properties(igsd, t, z);
+			r = igbinary_unserialize_object_properties(igsd, t, z, ce);
 			break;
 		}
 		case igbinary_type_object_ser8:

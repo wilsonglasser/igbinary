@@ -3,7 +3,7 @@ Test serialize globals
 --SKIPIF--
 <?php
 if (!extension_loaded("igbinary")) print "skip\n";
-if (PHP_VERSION_ID >= 80100) print "skip php < 8.1\n"; // https://wiki.php.net/rfc/restrict_globals_usage
+if (PHP_VERSION_ID >= 80100) print "skip php >= 8.1\n"; // https://wiki.php.net/rfc/restrict_globals_usage
 ?>
 --FILE--
 <?php

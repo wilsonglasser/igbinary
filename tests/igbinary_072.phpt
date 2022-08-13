@@ -2,7 +2,8 @@
 igbinary and __PHP_INCOMPLETE_CLASS
 --FILE--
 <?php
-#[AllowDynamicProperties]
+// TODO: Remove temporary workaround for __PHP_Incomplete_Class missing #[AllowDynamicProperties]
+if (PHP_VERSION_ID >= 80200) { require_once __DIR__ . '/php82_suppress_dynamic_properties_warning.inc'; }
 class Test {}
 function test_ser_unser($obj) {
     var_dump(bin2hex($s = igbinary_serialize($obj)));
