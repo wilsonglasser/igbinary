@@ -199,6 +199,11 @@ class Benchmark {
 			$json = ['serialize' => from_callable('json_encode'), 'unserialize' => from_callable('json_decode')];
 			$serializers['json'] = $json;
 		}
+		if (function_exists('simdjson_decode') && getenv('BENCHMARK_SIMDJSON')) {
+			// NOTE that json does not preserve class types or distinguish between associative arrays and objects
+			$json = ['serialize' => from_callable('json_encode'), 'unserialize' => from_callable('simdjson_decode')];
+			$serializers['simdjson'] = $json;
+		}
 		if (function_exists('msgpack_pack')) {
 			// NOTE that json does not preserve class types or distinguish between associative arrays and objects
 			$msgpack = ['serialize' => from_callable('msgpack_pack'), 'unserialize' => from_callable('msgpack_unpack')];
