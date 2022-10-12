@@ -28,7 +28,7 @@ ENV PATH=/php-valgrind-install/bin:$PATH
 # - ci/install_php_custom.sh and ci/generate_php_install_dir.sh may be a useful reference for that.
 ADD *.sh *.c *.h *.php *.md config.m4 config.w32 package.xml COPYING CREDITS NEWS igbinary.spec igbinary.php.ini ./
 ADD src ./src
-RUN phpize && ./configure $PHP_CONFIGURE_ARGS && make clean && make -j2
+RUN export CFLAGS; phpize && ./configure $PHP_CONFIGURE_ARGS && make clean && make -j2
 # RUN docker-php-ext-enable igbinary
 ADD tests ./tests
 ADD ci ./ci

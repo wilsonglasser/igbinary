@@ -26,14 +26,27 @@ ARCHITECTURE=${3:-}
 # NOTE: php 7.3-8.0 (but not 8.1) will fail in valgrind without "--with-valgrind" because php-src uses custom assembly for its implementation of zend_string_equals
 # In order to fix those false positives, a different set of images would be needed where (1) valgrind was installed before compiling php, and (2) php was compiled with support for valgrind (--with-valgrind) to avoid false positives
 # docker run --rm $DOCKER_IMAGE ci/test_inner_valgrind.sh
+CFLAGS="-DZEND_RC_DEBUG=1"
+PHP_CONFIGURE_ARGS="--disable-all --enable-zts --enable-debug --enable-cgi --enable-session --enable-json --with-curl"
 if [[ "$ARCHITECTURE" == i386 ]]; then
 	PHP_IMAGE="$ARCHITECTURE/php"
 	DOCKER_IMAGE_VALGRIND="igbinary-valgrind-test-runner:$ARCHITECTURE-$PHP_VERSION_FULL"
+	# php infers the x86_64 platform and php fails to build the corresponding assembly.
+	# igbinary tests don't even involve Fibers
+	PHP_CONFIGURE_ARGS="$PHP_CONFIGURE_ARGS --disable-fiber-asm"
+	CFLAGS="$CFLAGS -m32"
 else
 	PHP_IMAGE="php"
 	DOCKER_IMAGE_VALGRIND="igbinary-valgrind-test-runner:$ARCHITECTURE-$PHP_VERSION"
 fi
 
 DOCKER_IMAGE_VALGRIND=igbinary-valgrind-test-runner:$PHP_VERSION_FULL
-docker build --build-arg="PHP_IMAGE=$PHP_IMAGE" --build-arg="PHP_VERSION=$PHP_VERSION" --build-arg="PHP_VERSION_FULL=$PHP_VERSION_FULL" --tag="$DOCKER_IMAGE_VALGRIND" -f ci/Dockerfile.valgrind .
+docker build \
+	--build-arg="CFLAGS=$CFLAGS" \
+	--build-arg="PHP_CONFIGURE_ARGS=$PHP_CONFIGURE_ARGS" \
+	--build-arg="PHP_IMAGE=$PHP_IMAGE" \
+	--build-arg="PHP_VERSION=$PHP_VERSION" \
+	--build-arg="PHP_VERSION_FULL=$PHP_VERSION_FULL" \
+	--tag="$DOCKER_IMAGE_VALGRIND" \
+	-f ci/Dockerfile.valgrind .
 docker run --rm $DOCKER_IMAGE_VALGRIND ci/test_inner_valgrind.sh
