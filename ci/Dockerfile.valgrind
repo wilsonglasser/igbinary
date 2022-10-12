@@ -1,5 +1,6 @@
+ARG PHP_IMAGE
 ARG PHP_VERSION
-FROM php:$PHP_VERSION
+FROM $PHP_IMAGE:$PHP_VERSION
 WORKDIR /code
 RUN apt-get update && apt-get install -y valgrind && apt-get clean
 RUN apt-get install -y libcurl4-openssl-dev
@@ -27,7 +28,7 @@ ENV PATH=/php-valgrind-install/bin:$PATH
 # - ci/install_php_custom.sh and ci/generate_php_install_dir.sh may be a useful reference for that.
 ADD *.sh *.c *.h *.php *.md config.m4 config.w32 package.xml COPYING CREDITS NEWS igbinary.spec igbinary.php.ini ./
 ADD src ./src
-RUN phpize && ./configure $PHP_CONFIGURE_ARGS && make clean && make -j2
+RUN export CFLAGS; phpize && ./configure $PHP_CONFIGURE_ARGS && make clean && make -j2
 # RUN docker-php-ext-enable igbinary
 ADD tests ./tests
 ADD ci ./ci
