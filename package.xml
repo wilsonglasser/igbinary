@@ -45,6 +45,11 @@ memcached or similar memory based storages for serialized data.</description>
  <notes>
 * Reduce excessive inlining to reduce shared library size.
 * Miscellaneous optimizations.
+* Update test expectations to handle changes to var_export output (fully qualified class names) in PHP 8.2.
+* Throw an Error when igbinary_unserialize would add dynamic properties to class definitions that forbid them in PHP 8.0+
+  (especially PHP 8.2 `readonly` classes)
+* Emit a deprecation notice when igbinary_unserialize() adds dynamic properties to a class without `#[AllowDynamicProperties]` in PHP 8.2.
+  Doing that would become an Error in PHP 9.0.
  </notes>
  <contents>
   <dir name="/">

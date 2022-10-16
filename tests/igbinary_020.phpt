@@ -7,6 +7,11 @@ if(!extension_loaded('igbinary')) {
 	dl('igbinary.' . PHP_SHLIB_SUFFIX);
 }
 
+if (PHP_VERSION_ID >= 80200) {
+    // TODO undo workaround when #[AllowDynamicProperties] is added to __PHP_Incomplete_Class
+    error_reporting(E_ALL & ~E_DEPRECATED);
+}
+
 function test($type, $variable, $test) {
 	$serialized = pack('H*', $variable);
 	$unserialized = igbinary_unserialize($serialized);

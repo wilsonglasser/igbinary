@@ -4,7 +4,7 @@ __serialize() mechanism (021): Test __serialize without __unserialize
 <?php if (PHP_VERSION_ID < 70400) { echo "skip __serialize/__unserialize not supported in php < 7.4 for compatibility with serialize()"; } ?>
 --FILE--
 <?php
-
+#[AllowDynamicProperties]
 class Test {
     const SOME_CONST = ['key' => 'value'];
 

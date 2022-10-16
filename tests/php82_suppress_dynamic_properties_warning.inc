@@ -4,7 +4,7 @@ if (PHP_VERSION_ID < 80200) {
 }
 $totalErrors = 0;
 function igbinary_suppress_dynamic_properties_warning($errno, $errstr): bool {
-    if ($errno === E_DEPRECATED && str_starts_with($errstr, 'Creation of dynamic property') > 0) {
+    if ($errno === E_DEPRECATED && str_contains($errstr, 'Creation of dynamic property')) {
         $GLOBALS['totalErrors']++;
         return true;
     }

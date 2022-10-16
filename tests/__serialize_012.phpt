@@ -5,6 +5,9 @@ Test unserialization of classes derived from ArrayIterator
 --FILE--
 <?php
 // based on bug45706.phpt from php-src
+//
+// NOTE: ArrayIterator::__debugInfo adds a fake private property that doesn't actually exist, which affects var_dump.
+// This isn't a bug in the unserializer.
 class Foo1 extends ArrayIterator
 {
 }
