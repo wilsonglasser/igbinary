@@ -2841,8 +2841,8 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 			if (UNEXPECTED(!(ce->ce_flags & ZEND_ACC_ALLOW_DYNAMIC_PROPERTIES))) {
 				php_error_docref(NULL, E_DEPRECATED, "Creation of dynamic property %s::$%s is deprecated",
 					ZSTR_VAL(ce->name), zend_get_unmangled_property_name(key_str));
-				zend_string_release(key_str);
 				if (UNEXPECTED(EG(exception))) {
+					zend_string_release(key_str);
 					return 1;
 				}
 			}
