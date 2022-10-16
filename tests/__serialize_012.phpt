@@ -4,9 +4,10 @@ Test unserialization of classes derived from ArrayIterator
 <?php if (PHP_VERSION_ID < 70406) { echo "Skip requires php 7.4.6+"; } ?>
 --FILE--
 <?php
-// TODO remove temporary workaround for __PHP_Incomplete_Class missing #[AllowDynamicProperties]
-if (PHP_VERSION_ID >= 80200) { require_once __DIR__ . '/php82_suppress_dynamic_properties_warning.inc'; }
 // based on bug45706.phpt from php-src
+//
+// NOTE: ArrayIterator::__debugInfo adds a fake private property that doesn't actually exist, which affects var_dump.
+// This isn't a bug in the unserializer.
 class Foo1 extends ArrayIterator
 {
 }

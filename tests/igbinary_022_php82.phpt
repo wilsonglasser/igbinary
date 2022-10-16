@@ -10,8 +10,6 @@ unserialize_callback_func=autoload
 if(!extension_loaded('igbinary')) {
 	dl('igbinary.' . PHP_SHLIB_SUFFIX);
 }
-// TODO remove temporary workaround for __PHP_Incomplete_Class missing #[AllowDynamicProperties]
-if (PHP_VERSION_ID >= 80200) { require_once __DIR__ . '/php82_suppress_dynamic_properties_warning.inc'; }
 
 function test(string $type, string $variable) {
 	$serialized = pack('H*', $variable);
@@ -79,7 +77,7 @@ int(2)
 OK
 Autoloading Obk
 
-Warning: igbinary_unserialize(): Function autoload() hasn't defined the class it was called for in %sigbinary_022_php82.php on line 11
+Warning: igbinary_unserialize(): Function autoload() hasn't defined the class it was called for in %sigbinary_022_php82.php on line 9
 autoload
 17034f626b140211016106011101620602
 object(__PHP_Incomplete_Class)#1 (3) {
@@ -91,10 +89,10 @@ object(__PHP_Incomplete_Class)#1 (3) {
   int(2)
 }
 
-Warning: test(): The script tried to access a property on an incomplete object. Please ensure that the class definition "Obk" of the object you are trying to operate on was loaded _before_ unserialize() gets called or provide an autoloader to load the class definition in %sigbinary_022_php82.php on line 23
+Warning: test(): The script tried to access a property on an incomplete object. Please ensure that the class definition "Obk" of the object you are trying to operate on was loaded _before_ unserialize() gets called or provide an autoloader to load the class definition in %sigbinary_022_php82.php on line 21
 NULL
 
-Warning: test(): The script tried to access a property on an incomplete object. Please ensure that the class definition "Obk" of the object you are trying to operate on was loaded _before_ unserialize() gets called or provide an autoloader to load the class definition in %sigbinary_022_php82.php on line 24
+Warning: test(): The script tried to access a property on an incomplete object. Please ensure that the class definition "Obk" of the object you are trying to operate on was loaded _before_ unserialize() gets called or provide an autoloader to load the class definition in %sigbinary_022_php82.php on line 22
 ERROR
 missing_autoload
 Caught Invalid callback missing_autoload, function "missing_autoload" not found or invalid function name
