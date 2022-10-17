@@ -1,3 +1,8 @@
+3.2.8 2022-10-17
+=======
+
+* Fix invalid release artifact name in job to build dlls for https://github.com/igbinary/igbinary
+
 3.2.8 2022-10-16
 =======
 

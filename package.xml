@@ -31,10 +31,10 @@ memcached or similar memory based storages for serialized data.</description>
   <email>tandre@php.net</email>
   <active>yes</active>
  </lead>
- <date>2022-10-16</date>
+ <date>2022-10-17</date>
  <time>16:00:00</time>
  <version>
-  <release>3.2.8</release>
+  <release>3.2.9</release>
   <api>1.3.1</api>
  </version>
  <stability>
@@ -43,14 +43,7 @@ memcached or similar memory based storages for serialized data.</description>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Reduce excessive inlining to reduce shared library size.
-* Miscellaneous optimizations.
-* Update test expectations to handle changes to var_export output (fully qualified class names) in PHP 8.2.
-* Throw an Error when igbinary_unserialize would add dynamic properties to class definitions that forbid them in PHP 8.0+
-  (especially PHP 8.2 `readonly` classes)
-* Emit a deprecation notice when igbinary_unserialize() adds dynamic properties to a class without `#[AllowDynamicProperties]` in PHP 8.2.
-  Doing that would become an Error in PHP 9.0.
-* Set up CI job to build dlls on https://github.com/igbinary/igbinary - at the moment, the infrastructure used by the Windows for php team has been broken for months.
+* Fix invalid release artifact name in job to build dlls for https://github.com/igbinary/igbinary
  </notes>
  <contents>
   <dir name="/">
@@ -236,6 +229,29 @@ memcached or similar memory based storages for serialized data.</description>
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2022-10-16</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.2.8</release>
+    <api>1.3.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Reduce excessive inlining to reduce shared library size.
+* Miscellaneous optimizations.
+* Update test expectations to handle changes to var_export output (fully qualified class names) in PHP 8.2.
+* Throw an Error when igbinary_unserialize would add dynamic properties to class definitions that forbid them in PHP 8.0+
+  (especially PHP 8.2 `readonly` classes)
+* Emit a deprecation notice when igbinary_unserialize() adds dynamic properties to a class without `#[AllowDynamicProperties]` in PHP 8.2.
+  Doing that would become an Error in PHP 9.0.
+* Set up CI job to build dlls on https://github.com/igbinary/igbinary - at the moment, the infrastructure used by the Windows for php team has been broken for months.
+   </notes>
+  </release>
   <release>
    <date>2021-08-11</date>
    <time>16:00:00</time>
