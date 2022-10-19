@@ -17,5 +17,5 @@ var_dump(igbinary_unserialize($ser_invalid));
 
 ?>
 --EXPECTF--
-Warning: igbinary_unserialize_chararray: end-of-data in %sigbinary_089_32bit.php on line 3
+Warning: igbinary_unserialize_chararray: %s in %sigbinary_089_32bit.php on line 3
 NULL
