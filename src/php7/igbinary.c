@@ -2161,7 +2161,7 @@ inline static int igbinary_unserialize_header(struct igbinary_unserialize_data *
 	version = igbinary_unserialize32(igsd);
 
 	/* Support older version 1 and the current format 2 */
-	if (version == IGBINARY_FORMAT_VERSION || version == 0x00000001) {
+	if (EXPECTED(version == IGBINARY_FORMAT_VERSION || version == 0x00000001)) {
 		return 0;
 	} else {
 		igbinary_unserialize_header_emit_warning(igsd, version);
