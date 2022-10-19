@@ -2345,7 +2345,8 @@ inline static zend_string *igbinary_unserialize_string(struct igbinary_unseriali
 /* }}} */
 /* igbinary_unserialize_extremely_long_chararray {{{ */
 static ZEND_COLD zend_never_inline zend_string* igbinary_unserialize_extremely_long_chararray(struct igbinary_unserialize_data *igsd) {
-#if SIZEOF_ZEND_LONG > 4
+#if SIZEOF_SIZE_T <= 4
+	(void)igsd;
 	zend_error(E_WARNING, "igbinary_unserialize_chararray: cannot unserialize 64-bit data on 32-bit platform");
 	return NULL;
 #else
