@@ -269,6 +269,7 @@ struct igbinary_unserialize_data {
 	uint32_t deferred_count;        /**< count of objects in array for calls to __unserialize/__wakeup. NOTE: Current php releases including 8.1 limit the total number of objects to a 32-bit integer. */
 	zend_bool deferred_finished;    /**< whether the deferred calls were performed */
 	struct deferred_dtor_tracker deferred_dtor_tracker;  /**< refcounted objects and arrays to call dtor on after unserializing. See i_zval_ptr_dtor */
+	HashTable *ref_props; /**< objects&data for calls to __unserialize/__wakeup */
 };
 
 #define IGB_REF_VAL_2(igsd, n)	((igsd)->references[(n)])
@@ -780,6 +781,10 @@ IGBINARY_API int igbinary_unserialize(const uint8_t *buf, size_t buf_len, zval *
 	if (UNEXPECTED(igbinary_unserialize_zval(&igsd, z, WANT_CLEAR))) {
 		ret = 1;
 		goto cleanup;
+	}
+	if (Z_REFCOUNTED_P(z)) {
+		zend_refcounted *ref = Z_COUNTED_P(z);
+		gc_check_possible_root(ref);
 	}
 
 	if (UNEXPECTED(igsd.buffer_ptr < igsd.buffer_end)) {
@@ -2066,6 +2071,7 @@ inline static int igbinary_unserialize_data_init(struct igbinary_unserialize_dat
 	igsd->deferred_dtor_tracker.zvals = NULL;
 	igsd->deferred_dtor_tracker.count = 0;
 	igsd->deferred_dtor_tracker.capacity = 0;
+	igsd->ref_props = NULL;
 
 	return 0;
 }
@@ -2110,6 +2116,10 @@ inline static void igbinary_unserialize_data_deinit(struct igbinary_unserialize_
 		efree(calls);
 	}
 	free_deferred_dtors(&igsd->deferred_dtor_tracker);
+	if (igsd->ref_props) {
+		zend_hash_destroy(igsd->ref_props);
+		FREE_HASHTABLE(igsd->ref_props);
+	}
 
 	return;
 }
@@ -2815,6 +2825,18 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 				prototype_value = Z_INDIRECT_P(prototype_value);
 #if PHP_VERSION_ID >= 70400
 				info = zend_get_typed_property_info_for_slot(Z_OBJ_P(z_deref), prototype_value);
+				if (info) {
+					if (Z_ISREF_P(prototype_value)) {
+						/* If the value is overwritten, remove old type source from ref. */
+						ZEND_REF_DEL_TYPE_SOURCE(Z_REF_P(prototype_value), info);
+					}
+
+					if (igsd->ref_props) {
+						/* Remove old entry from ref_props table, if it exists. */
+						zend_hash_index_del(
+							igsd->ref_props, (zend_uintptr_t) prototype_value);
+					}
+				}
 #endif
 			}
 			/* This is written to avoid the overhead of a second zend_hash_update call. See https://github.com/php/php-src/pull/5095 */
@@ -2865,6 +2887,13 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 		ZEND_ASSERT(Z_TYPE_P(vp) != IS_INDIRECT);
 
 		if (UNEXPECTED(igbinary_unserialize_zval(igsd, vp, WANT_CLEAR))) {
+#if PHP_VERSION_ID >= 70400
+			if (info && Z_ISREF_P(vp)) {
+				/* Add type source even if we failed to unserialize.
+				 * The data is still stored in the property. */
+				ZEND_REF_ADD_TYPE_SOURCE(Z_REF_P(vp), info);
+			}
+#endif
 			/* Unserializing a property into this zval has failed. */
 			/* zval_ptr_dtor(z); */
 			/* zval_ptr_dtor(vp); */
@@ -2879,6 +2908,15 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 			}
 			if (Z_ISREF_P(vp)) {
 				ZEND_REF_ADD_TYPE_SOURCE(Z_REF_P(vp), info);
+			} else {
+				/* Remember to which property this slot belongs, so we can add a
+				 * type source if it is turned into a reference lateron. */
+				if (!igsd->ref_props) {
+					igsd->ref_props = emalloc(sizeof(HashTable));
+					zend_hash_init(igsd->ref_props, 8, NULL, NULL, 0);
+				}
+				zend_hash_index_update_ptr(
+					igsd->ref_props, (zend_uintptr_t) vp, info);
 			}
 		}
 #endif
@@ -3406,7 +3444,16 @@ static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zva
 			/* Permanently convert the zval in IGB_REF_VAL() into a IS_REFERENCE if it wasn't already one. */
 			/* TODO: Support multiple reference groups to the same object */
 			/* Similar to https://github.com/php/php-src/blob/master/ext/standard/var_unserializer.re , for "R:" */
-			ZVAL_MAKE_REF(z);
+			if (!Z_ISREF_P(z)) {
+				zend_property_info *info = NULL;
+				if (igsd->ref_props) {
+					info = zend_hash_index_find_ptr(igsd->ref_props, (zend_uintptr_t) z);
+				}
+				ZVAL_NEW_REF(z, z);
+				if (info) {
+					ZEND_REF_ADD_TYPE_SOURCE(Z_REF_P(z), info);
+				}
+			}
 			switch (type) {
 				case IS_STRING:
 				case IS_LONG:
