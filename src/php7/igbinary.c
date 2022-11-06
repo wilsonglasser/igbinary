@@ -269,7 +269,9 @@ struct igbinary_unserialize_data {
 	uint32_t deferred_count;        /**< count of objects in array for calls to __unserialize/__wakeup. NOTE: Current php releases including 8.1 limit the total number of objects to a 32-bit integer. */
 	zend_bool deferred_finished;    /**< whether the deferred calls were performed */
 	struct deferred_dtor_tracker deferred_dtor_tracker;  /**< refcounted objects and arrays to call dtor on after unserializing. See i_zval_ptr_dtor */
+#if PHP_VERSION_ID >= 70400
 	HashTable *ref_props; /**< objects&data for calls to __unserialize/__wakeup */
+#endif
 };
 
 #define IGB_REF_VAL_2(igsd, n)	((igsd)->references[(n)])
@@ -783,8 +785,12 @@ IGBINARY_API int igbinary_unserialize(const uint8_t *buf, size_t buf_len, zval *
 		goto cleanup;
 	}
 	if (Z_REFCOUNTED_P(z)) {
+#if PHP_VERSION_ID >= 70200
 		zend_refcounted *ref = Z_COUNTED_P(z);
 		gc_check_possible_root(ref);
+#else
+		gc_check_possible_root(z);
+#endif
 	}
 
 	if (UNEXPECTED(igsd.buffer_ptr < igsd.buffer_end)) {
@@ -2071,7 +2077,9 @@ inline static int igbinary_unserialize_data_init(struct igbinary_unserialize_dat
 	igsd->deferred_dtor_tracker.zvals = NULL;
 	igsd->deferred_dtor_tracker.count = 0;
 	igsd->deferred_dtor_tracker.capacity = 0;
+#if PHP_VERSION_ID >= 70400
 	igsd->ref_props = NULL;
+#endif
 
 	return 0;
 }
@@ -2116,10 +2124,12 @@ inline static void igbinary_unserialize_data_deinit(struct igbinary_unserialize_
 		efree(calls);
 	}
 	free_deferred_dtors(&igsd->deferred_dtor_tracker);
+#if PHP_VERSION_ID >= 70400
 	if (igsd->ref_props) {
 		zend_hash_destroy(igsd->ref_props);
 		FREE_HASHTABLE(igsd->ref_props);
 	}
+#endif
 
 	return;
 }
@@ -3445,14 +3455,18 @@ static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zva
 			/* TODO: Support multiple reference groups to the same object */
 			/* Similar to https://github.com/php/php-src/blob/master/ext/standard/var_unserializer.re , for "R:" */
 			if (!Z_ISREF_P(z)) {
+#if PHP_VERSION_ID >= 70400
 				zend_property_info *info = NULL;
 				if (igsd->ref_props) {
 					info = zend_hash_index_find_ptr(igsd->ref_props, (zend_uintptr_t) z);
 				}
+#endif
 				ZVAL_NEW_REF(z, z);
+#if PHP_VERSION_ID >= 70400
 				if (info) {
 					ZEND_REF_ADD_TYPE_SOURCE(Z_REF_P(z), info);
 				}
+#endif
 			}
 			switch (type) {
 				case IS_STRING:
