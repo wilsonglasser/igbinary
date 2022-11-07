@@ -20,6 +20,7 @@
 #include "Zend/zend_alloc.h"
 #include "Zend/zend_exceptions.h"
 #include "Zend/zend_interfaces.h"
+#include "Zend/zend_compile.h" /* ZEND_ACC_NOT_SERIALIZABLE */
 #include "ext/standard/info.h"
 #include "ext/standard/php_var.h"
 

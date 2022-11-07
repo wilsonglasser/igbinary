@@ -31,10 +31,10 @@ memcached or similar memory based storages for serialized data.</description>
   <email>tandre@php.net</email>
   <active>yes</active>
  </lead>
- <date>2022-11-06</date>
+ <date>2022-11-07</date>
  <time>16:00:00</time>
  <version>
-  <release>3.2.11</release>
+  <release>3.2.12</release>
   <api>1.4.0</api>
  </version>
  <stability>
@@ -43,8 +43,7 @@ memcached or similar memory based storages for serialized data.</description>
  </stability>
  <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
  <notes>
-* Fix a bug that could prevent objects/arrays with reference cycles from being properly garbage collected.
-* Fix bugs in unserializing PHP references to values found in php 7.4 typed properties (#363)
+* Fix symbol error seen in php 8.2.0 loading zend_class_unserialize_deny, due to failing to load a header defining a macro.
  </notes>
  <contents>
   <dir name="/">
@@ -240,6 +239,23 @@ memcached or similar memory based storages for serialized data.</description>
  <providesextension>igbinary</providesextension>
  <extsrcrelease />
  <changelog>
+  <release>
+   <date>2022-11-06</date>
+   <time>16:00:00</time>
+   <version>
+    <release>3.2.11</release>
+    <api>1.4.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <license uri="https://github.com/igbinary/igbinary/blob/master/COPYING">BSD-3-Clause</license>
+   <notes>
+* Fix a bug that could prevent objects/arrays with reference cycles from being properly garbage collected.
+* Fix bugs in unserializing PHP references to values found in php 7.4 typed properties (#363)
+   </notes>
+  </release>
   <release>
    <date>2022-11-06</date>
    <time>16:00:00</time>
