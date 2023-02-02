@@ -2845,7 +2845,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 					if (igsd->ref_props) {
 						/* Remove old entry from ref_props table, if it exists. */
 						zend_hash_index_del(
-							igsd->ref_props, (zend_uintptr_t) prototype_value);
+							igsd->ref_props, ((zend_uintptr_t) prototype_value) >> ZEND_MM_ALIGNMENT_LOG2);
 					}
 				}
 #endif
@@ -2927,7 +2927,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 					zend_hash_init(igsd->ref_props, 8, NULL, NULL, 0);
 				}
 				zend_hash_index_update_ptr(
-					igsd->ref_props, (zend_uintptr_t) vp, info);
+					igsd->ref_props, ((zend_uintptr_t) vp) >> ZEND_MM_ALIGNMENT_LOG2, info);
 			}
 		}
 #endif
@@ -3459,7 +3459,7 @@ static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zva
 #if PHP_VERSION_ID >= 70400
 				zend_property_info *info = NULL;
 				if (igsd->ref_props) {
-					info = zend_hash_index_find_ptr(igsd->ref_props, (zend_uintptr_t) z);
+					info = zend_hash_index_find_ptr(igsd->ref_props, ((zend_uintptr_t) z) >> ZEND_MM_ALIGNMENT_LOG2);
 				}
 #endif
 				ZVAL_NEW_REF(z, z);

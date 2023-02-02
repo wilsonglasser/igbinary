@@ -1,6 +1,6 @@
 name: Build DLLs
 # Based on https://github.com/TysonAndre/var_representation/blob/main/.github/workflows/build_dlls.yml
-# which is based on https://github.com/krakjoe/apcu/blob/migbinaryer/.github/workflows/config.yml
+# which is based on https://github.com/krakjoe/apcu/blob/master/.github/workflows/config.yml
 # Builds DLLs for 64-bit php.
 # See https://windows.php.net/ - At this time, the windows PHP team no longer has access to the machine used to build dlls.
 
