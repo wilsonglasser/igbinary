@@ -1,3 +1,29 @@
+3.2.13 2023-02-02
+=======
+
+* Speed up unserialization of typed properties by reducing hash table collisions when looking up property reference info.
+
+3.2.12 2022-11-07
+=======
+
+* Fix symbol error seen in php 8.2.0 loading zend_class_unserialize_deny, due to failing to load a header defining a macro.
+
+3.2.11 2022-11-06
+=======
+* Fix a bug that could prevent objects/arrays with reference cycles from being properly garbage collected.
+* Fix bugs in unserializing PHP references to values found in php 7.4 typed properties (#363)
+
+3.2.10 2022-11-06
+=======
+
+* Add a macro that callers can use to check if igbinary will accept the header for data being unserialized.
+* Fix bug preventing the unserialization of data containing representations of strings larger than 4GB.
+
+3.2.9 2022-10-17
+=======
+
+* Fix invalid release artifact name in job to build dlls for https://github.com/igbinary/igbinary
+
 3.2.8 2022-10-17
 =======
 
