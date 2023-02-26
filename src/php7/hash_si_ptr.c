@@ -22,7 +22,7 @@
 #include "igbinary_bswap.h"
 
 /* This assumes that pointers differ in low addresses rather than high addresses */
-inline static uint32_t inline_hash_of_address(zend_uintptr_t ptr) {
+inline static uint32_t inline_hash_of_address(uintptr_t ptr) {
 #if UINTPTR_MAX > UINT32_MAX
 	uint64_t hash = ptr;
 	hash *= 0x5e2d58d8b3bce8d9;
@@ -130,7 +130,7 @@ inline static void hash_si_ptr_rehash(struct hash_si_ptr *h) {
  * @param value - If the key does not exist, this is the value to associate with key
  * @return the old value, or SIZE_MAX if the key is brand new.
  */
-size_t hash_si_ptr_find_or_insert(struct hash_si_ptr *h, const zend_uintptr_t key, uint32_t value) {
+size_t hash_si_ptr_find_or_insert(struct hash_si_ptr *h, const uintptr_t key, uint32_t value) {
 	size_t size;
 	size_t mask;
 	uint32_t hv;

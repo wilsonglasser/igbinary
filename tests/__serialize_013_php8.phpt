@@ -6,6 +6,7 @@ __serialize() mechanism (013): Properties are still typed after unserialization 
 <?php
 declare(strict_types=1);
 
+/** @property mixed $std */
 #[AllowDynamicProperties]
 class Test {
     public int $i = 0;
@@ -34,7 +35,7 @@ $t2->s = null;
 try {
     $t2->s = false;
 } catch (Error $e) {
-    echo "s: " . $e->getMessage() . "\n";
+    echo "s: " . str_replace('false', 'bool', $e->getMessage()) . "\n";
 }
 $t2->s = 'other';
 try {
@@ -58,6 +59,7 @@ try {
     echo "a: " . $e->getMessage() . "\n";
 }
 var_dump($t2);
+?>
 --EXPECT--
 object(Test)#1 (5) {
   ["i"]=>

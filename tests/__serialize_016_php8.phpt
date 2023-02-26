@@ -9,8 +9,10 @@ if (PHP_VERSION_ID >= 90000) { echo "skip requires php < 9.0 when testing that t
 <?php
 declare(strict_types=1);
 
+// Asserts that this will emit a warning about dynamic properties due to the lack of #[AllowDynamicProperties] in PHP 8.2+, and suppresses the warning
 if (PHP_VERSION_ID >= 80200) { require_once __DIR__ . '/php82_suppress_dynamic_properties_warning.inc'; }
 
+/** @property mixed $std undeclared dynamic property */
 class Test {
     public int $i = 0;
     public ?string $s = 's';
@@ -39,7 +41,8 @@ $t2->s = null;
 try {
     $t2->s = false;
 } catch (Error $e) {
-    echo "s: " . $e->getMessage() . "\n";
+    // The error message is "Cannot assign false" in php 8.3+
+    echo "s: " . str_replace('false', 'bool', $e->getMessage()) . "\n";
 }
 $t2->s = 'other';
 try {
@@ -63,6 +66,7 @@ try {
     echo "a: " . $e->getMessage() . "\n";
 }
 var_dump($t2);
+?>
 --EXPECT--
 object(Test)#1 (5) {
   ["i"]=>

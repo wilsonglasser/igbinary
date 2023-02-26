@@ -1494,7 +1494,7 @@ inline static int igbinary_serialize_array(struct igbinary_serialize_data *igsd,
 /* TODO: Use different result codes for missing keys and errors */
 zend_always_inline static int igbinary_serialize_array_ref(struct igbinary_serialize_data *igsd, zval * const z, bool object) {
 	size_t t;
-	zend_uintptr_t key;  /* The address of the pointer to the zend_refcounted struct or other struct */
+	uintptr_t key;  /* The address of the pointer to the zend_refcounted struct or other struct */
 	static int INVALID_KEY;  /* Not used, but we take the pointer of this knowing other zvals won't share it*/
 
 	/* Similar to php_var_serialize_intern's first part, as well as php_add_var_hash, for printing R: (reference) or r:(object) */
@@ -1507,15 +1507,15 @@ zend_always_inline static int igbinary_serialize_array_ref(struct igbinary_seria
 	/* is_ref || IS_OBJECT implies it has a unique refcounted struct */
 	// NOTE: The original code would always use the same memory address - Z_COUNTED_P is the start of an object/array/reference
 // 	if (object && Z_TYPE_P(z) == IS_OBJECT) {
-// 		key = (zend_uintptr_t)Z_OBJ_P(z); /* expand object handle(uint32_t), cast to 32-bit/64-bit pointer */
+// 		key = (uintptr_t)Z_OBJ_P(z); /* expand object handle(uint32_t), cast to 32-bit/64-bit pointer */
 // 	} else if (is_ref) {
 // 		/* NOTE: PHP switched from `zval*` to `zval` for the values stored in HashTables.
 // 		 * If an array has two references to the same ZVAL, then those references will have different zvals.
 // 		 * We use Z_COUNTED_P(ref), which will be the same if (and only if) the references are the same. */
 // 		/* is_ref implies there is a unique reference counting pointer for the reference */
-// 		key = (zend_uintptr_t)Z_COUNTED_P(z);
+// 		key = (uintptr_t)Z_COUNTED_P(z);
 // 	} else if (EXPECTED(Z_TYPE_P(z) == IS_ARRAY)) {
-// 		key = (zend_uintptr_t)Z_ARR_P(z);
+// 		key = (uintptr_t)Z_ARR_P(z);
 // 	} else {
 // 		/* Nothing else is going to reference this when this is serialized, this isn't ref counted or an object, shouldn't be reached. */
 // 		/* Increment the reference id for the deserializer, give up. */
@@ -1528,9 +1528,9 @@ zend_always_inline static int igbinary_serialize_array_ref(struct igbinary_seria
 	/* because that's the way it was serialized in php5. */
 	/* Does this work with different forms of recursive arrays? */
 	if (igsd->references_id == 0 && !object) {
-		key = (zend_uintptr_t)&INVALID_KEY;
+		key = (uintptr_t)&INVALID_KEY;
 	} else {
-		key = (zend_uintptr_t)z->value.ptr;
+		key = (uintptr_t)z->value.ptr;
 	}
 
 	t = hash_si_ptr_find_or_insert(&igsd->references, key, igsd->references_id);
@@ -2845,7 +2845,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 					if (igsd->ref_props) {
 						/* Remove old entry from ref_props table, if it exists. */
 						zend_hash_index_del(
-							igsd->ref_props, ((zend_uintptr_t) prototype_value) >> ZEND_MM_ALIGNMENT_LOG2);
+							igsd->ref_props, ((uintptr_t) prototype_value) >> ZEND_MM_ALIGNMENT_LOG2);
 					}
 				}
 #endif
@@ -2927,7 +2927,7 @@ inline static int igbinary_unserialize_object_properties(struct igbinary_unseria
 					zend_hash_init(igsd->ref_props, 8, NULL, NULL, 0);
 				}
 				zend_hash_index_update_ptr(
-					igsd->ref_props, ((zend_uintptr_t) vp) >> ZEND_MM_ALIGNMENT_LOG2, info);
+					igsd->ref_props, ((uintptr_t) vp) >> ZEND_MM_ALIGNMENT_LOG2, info);
 			}
 		}
 #endif
@@ -3459,7 +3459,7 @@ static int igbinary_unserialize_zval(struct igbinary_unserialize_data *igsd, zva
 #if PHP_VERSION_ID >= 70400
 				zend_property_info *info = NULL;
 				if (igsd->ref_props) {
-					info = zend_hash_index_find_ptr(igsd->ref_props, ((zend_uintptr_t) z) >> ZEND_MM_ALIGNMENT_LOG2);
+					info = zend_hash_index_find_ptr(igsd->ref_props, ((uintptr_t) z) >> ZEND_MM_ALIGNMENT_LOG2);
 				}
 #endif
 				ZVAL_NEW_REF(z, z);
