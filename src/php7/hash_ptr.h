@@ -5,7 +5,7 @@
   | Author: Oleg Grenrus <oleg.grenrus@dynamoid.com>                     |
   | See CREDITS for contributors                                         |
   | This defines hash_si_ptr.                                            |
-  | It is like hash_si, but the key is always a non-zero zend_uintptr_t  |
+  | It is like hash_si, but the key is always a non-zero uintptr_t       |
   +----------------------------------------------------------------------+
 */
 
@@ -31,19 +31,19 @@
  * @see hash_si_ptr
  */
 struct hash_si_ptr_pair {
-	zend_uintptr_t key; /**< The key: The address of a pointer, casted to an int (won't be dereferenced). */
-	uint32_t value;		/**< Value. */
+	uintptr_t key;  /**< The key: The address of a pointer, casted to an int (won't be dereferenced). */
+	uint32_t value; /**< Value. */
 };
 
 /** Hash-array.
- * Like c++ std::unordered_map<zend_uintptr_t, int32_t>, but does not allow HASH_PTR_KEY_INVALID as a key.
+ * Like c++ std::unordered_map<uintptr_t, int32_t>, but does not allow HASH_PTR_KEY_INVALID as a key.
  * Current implementation uses linear probing.
  * @author Oleg Grenrus <oleg.grenrus@dynamoid.com>
  */
 struct hash_si_ptr {
-	size_t size; 					/**< Allocated size of array. */
-	size_t used;					/**< Used size of array. */
-	struct hash_si_ptr_pair *data;		/**< Pointer to array or pairs of data. */
+	size_t size;                   /**< Allocated size of array. */
+	size_t used;                   /**< Used size of array. */
+	struct hash_si_ptr_pair *data; /**< Pointer to array or pairs of data. */
 };
 
 /** Inits hash_si_ptr structure.
@@ -67,7 +67,7 @@ void hash_si_ptr_deinit(struct hash_si_ptr *h);
  * @return 0 on success, 1 or 2 else.
  */
 /*
-int hash_si_ptr_insert (struct hash_si_ptr *h, const zend_uintptr_t key, uint32_t value);
+int hash_si_ptr_insert (struct hash_si_ptr *h, const uintptr_t key, uint32_t value);
 */
 
 /** Finds value from hash_si_ptr.
@@ -79,7 +79,7 @@ int hash_si_ptr_insert (struct hash_si_ptr *h, const zend_uintptr_t key, uint32_
  * @return 0 if found, 1 if not.
  */
 /*
-int hash_si_ptr_find (struct hash_si_ptr *h, const zend_uintptr_t key, uint32_t * value);
+int hash_si_ptr_find (struct hash_si_ptr *h, const uintptr_t key, uint32_t * value);
 */
 
 /** Returns size of hash_si_ptr.
@@ -99,7 +99,7 @@ static zend_always_inline size_t hash_si_ptr_size(struct hash_si_ptr *h) {
  *
  * @return SIZE_MAX or old, unmodified key
  */
-size_t hash_si_ptr_find_or_insert(struct hash_si_ptr *h, const zend_uintptr_t key, uint32_t value);
+size_t hash_si_ptr_find_or_insert(struct hash_si_ptr *h, const uintptr_t key, uint32_t value);
 
 /** Returns capacity of hash_si_ptr.
  * @param h Pointer to hash_si_ptr struct.
