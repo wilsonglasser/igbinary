@@ -50,6 +50,8 @@ jobs:
          - PHP_VERSION: '8.2'
            PHP_VERSION_FULL: 8.2.8
            DOCKER_ARCHITECTURE: i386
+         - PHP_VERSION: '8.3.0beta1'
+           PHP_VERSION_FULL: 8.3.0beta1
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -66,7 +68,8 @@ jobs:
       #
       # We need to install valgrind then rebuild php from source with the configure option '--with-valgrind' to avoid valgrind false positives
       # because php-src has inline assembly that causes false positives in valgrind when that option isn't used.
+      # The OS release in the PHP 7.0 image is too old to install valgrind without workarounds: https://stackoverflow.com/questions/76094428/debian-stretch-repositories-404-not-found
       - name: Build and test in docker again with valgrind
-        run: bash ci/test_dockerized_valgrind.sh ${{ matrix.PHP_VERSION }} ${{ matrix.PHP_VERSION_FULL }} ${{ matrix.DOCKER_ARCHITECTURE }}
+        run: if [[ ${{ matrix.PHP_VERSION }} != '7.0' ]]; then bash ci/test_dockerized_valgrind.sh ${{ matrix.PHP_VERSION }} ${{ matrix.PHP_VERSION_FULL }} ${{ matrix.DOCKER_ARCHITECTURE }}; fi
       # NOTE: tests report false positives for zend_string_equals in php 7.3+
       # due to the use of inline assembly in php-src. (not related to igbinary)

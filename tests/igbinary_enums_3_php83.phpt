@@ -1,13 +1,15 @@
 --TEST--
 Test unserializing valid enums inferring value
 --SKIPIF--
-<?php if (PHP_VERSION_ID < 80100) { echo "skip enums requires php 8.1"; } ?>
+<?php if (PHP_VERSION_ID < 80300) { echo "skip non-compile time constant in enums requires php 8.3"; } ?>
 --FILE--
 <?php
+
 enum X: string {
-    const Y = 'a';
-    case X = self::Y . 'b';
+    case X = X;
 }
+$x = 'X';
+define('X', "dynamic$x");
 $value = urldecode('%00%00%00%02%17%01X%27%0E%00');
 var_dump(igbinary_unserialize($value));
 $ser = igbinary_serialize(X::X);
@@ -17,4 +19,4 @@ var_dump(X::X->value);
 --EXPECT--
 enum(X::X)
 %00%00%00%02%17%01X%27%0E%00
-string(2) "ab"
+string(8) "dynamicX"
