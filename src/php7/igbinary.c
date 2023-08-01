@@ -3031,7 +3031,7 @@ static int igbinary_unserialize_object_enum_case(struct igbinary_unserialize_dat
 		return 1;
 	}
 
-	zval *zv = zend_hash_find(&ce->constants_table, case_name);
+	zval *zv = zend_hash_find(CE_CONSTANTS_TABLE(ce), case_name);
 	if (UNEXPECTED(!zv)) {
 		zend_error(E_WARNING, "igbinary_unserialize_object_enum_case: Undefined constant %s::%s", ZSTR_VAL(ce->name), ZSTR_VAL(case_name));
 		zend_string_release(case_name);
