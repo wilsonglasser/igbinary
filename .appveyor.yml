@@ -35,42 +35,42 @@ environment:
         matrix:
                 - ARCH: x86
                   VC: vs16
-                  PHP_VER: 8.3.0beta1
+                  PHP_VER: 8.3.0RC2
                   TS: 1
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x64
                   VC: vs16
-                  PHP_VER: 8.3.0beta1
+                  PHP_VER: 8.3.0RC2
                   TS: 0
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x86
                   VC: vs16
-                  PHP_VER: 8.2.8
+                  PHP_VER: 8.2.10
                   TS: 1
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x64
                   VC: vs16
-                  PHP_VER: 8.2.8
+                  PHP_VER: 8.2.10
                   TS: 0
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x86
                   VC: vs16
-                  PHP_VER: 8.1.21
+                  PHP_VER: 8.1.23
                   TS: 1
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x64
                   VC: vs16
-                  PHP_VER: 8.1.21
+                  PHP_VER: 8.1.23
                   TS: 0
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x86
                   VC: vs16
-                  PHP_VER: 8.0.29
+                  PHP_VER: 8.0.30
                   TS: 1
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x64
                   VC: vs16
-                  PHP_VER: 8.0.29
+                  PHP_VER: 8.0.30
                   TS: 0
                   APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
                 - ARCH: x64
